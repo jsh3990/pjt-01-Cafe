@@ -6,7 +6,7 @@
 <mapper namespace="com.miniproject.cafe.Mapper.OrderMapper">
 
     <!-- 일일 주문 번호 계산하는 서브쿼리절 -->
-    <select id="findAllAdminOrders" resultType="com.miniproject.cafe.VO.OrderVO">
+    <select id="findAllAdminOrders" resultType="OrderVO">
         SELECT
         T.*
         FROM (
@@ -35,7 +35,7 @@
     </select>
 
 
-    <insert id="insertOrder" parameterType="com.miniproject.cafe.VO.OrderVO"
+    <insert id="insertOrder" parameterType="OrderVO"
             useGeneratedKeys="true" keyProperty="orderId">
         INSERT INTO orders (
             u_id,
