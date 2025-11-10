@@ -25,13 +25,32 @@ body {
     height: 100vh;
     max-width: 430px;
     margin: 0 auto;
-    background-color: #fff;
+    background-color: transparent; /* 배경을 투명하게 설정 */
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     border-radius: 20px;
+
+    position: relative; /* ::before 가상 요소의 기준점 */
+    z-index: 1; /* 컨텐츠가 배경 이미지보다 위에 오도록 */
 }
+
+.mobile-frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/Background-image.png');
+    background-repeat: no-repeat;
+    background-position: center center;
+    opacity: 0.2; /* 투명도 20% */
+    z-index: -1; /* .mobile-frame의 모든 컨텐츠 뒤로 보냄 */
+    border-radius: 20px; /* .mobile-frame과 동일하게 라운드 처리 */
+}
+
 .fixed-top {
     flex-shrink: 0;
     background-color: #f8f8f8;
@@ -49,30 +68,17 @@ body {
 .wrap {
     flex-grow: 1;
     overflow-y: auto;
-    background-color: transparent;
-    position: relative;
-    z-index: 1;
-}
-
-.wrap::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('/images/Background-image.png');
-    background-repeat: no-repeat;
-    background-position: center center;
-    opacity: 0.2; /* 투명도 10% */
-    z-index: -1;
+    background-color: transparent; /* <- transparent로 변경 */
+    position: relative; /* 자식 요소의 z-index가 제대로 작동하게 함 */
+    z-index: 2; /* .mobile-frame::before 위에 오도록 (main.container가 감싸므로) */
 }
 
 main.container {
     padding-top: 10px;
     padding-bottom: 20px;
     position: relative;
-    z-index: 2;
+    z-index: 2; /* .mobile-frame::before 위에 오도록 */
+    background-color: transparent; /* 기본은 투명 */
 }
 
 /* =================================
@@ -216,8 +222,9 @@ main.container {
     height: 250px;
     overflow: hidden;
     position: relative;
-    background-color: transparent;
+    background-color: transparent; /* 이미지가 배경을 가리지 않도록 투명 */
 }
+
 .main-banner img {
     width: 100%;
     height: 100%;
@@ -238,12 +245,13 @@ main.container {
 /* 이전 주문내역 */
 .previous-orders {
     padding: 15px;
-    background-color: rgba(247, 243, 242, 0.8);
+    background-color: rgba(255, 255, 255, 0.85); /* 흰색 + 85% 불투명도 */
     border-radius: 10px;
     margin: 10px 15px;
     position: relative;
     z-index: 2;
 }
+
 .previous-orders-header {
     display: flex;
     justify-content: space-between;
@@ -278,14 +286,17 @@ main.container {
     flex-shrink: 0;
     width: 100px;
     text-align: center;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(255, 255, 255, 0.95); /* 거의 불투명한 흰색 */
     border-radius: 10px;
     padding: 10px 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    position: relative;
+    z-index: 3; /* 이전 주문내역 위에 오도록 */
 }
+
 .previous-order-item img {
     width: 80px;
     height: 80px;
@@ -303,7 +314,7 @@ main.container {
 
 /* 리워드 섹션 */
 .reward-section {
-    background-color: rgba(248, 199, 157, 0.85); /* 약 85% 불투명도 */
+    background-color: rgba(248, 199, 157, 0.85); /* 기존 색상 + 85% 불투명도 */
     margin: 20px 15px;
     padding: 15px;
     border-radius: 15px;
@@ -314,6 +325,7 @@ main.container {
     position: relative;
     z-index: 2;
 }
+
 .reward-item {
     display: flex;
     align-items: center;
