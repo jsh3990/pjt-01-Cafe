@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.miniproject.cafe.Mapper.MemberMapper">
+    <insert id="MemberRegister" parameterType="MemberVO">
+        INSERT INTO MEMBER(
+           ID,
+           PASSWORD,
+           USERNAME,
+           EMAIL
+        ) VALUES (
+           #{id},
+           #{password},
+           #{username},
+           #{email}
+       )
+    </insert>
+
+    <select id="MemberLogin" resultType="MemberVO">
+        SELECT *
+        FROM MEMBER
+        WHERE ID = #{id}
+    </select>
+
+    <select id="isEmailDuplicate" parameterType="String" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM MEMBER
+        WHERE email = #{email}
+    </select>
+
+    <select id="isIdDuplicate" parameterType="String" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM MEMBER
+        WHERE ID = #{id}
+    </select>
+</mapper>

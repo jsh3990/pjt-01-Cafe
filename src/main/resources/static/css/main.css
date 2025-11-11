@@ -30,7 +30,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border-radius: 20px;
+    border-radius: 10px;
 
     position: relative; /* ::before 가상 요소의 기준점 */
     z-index: 1; /* 컨텐츠가 배경 이미지보다 위에 오도록 */
@@ -48,7 +48,6 @@ body {
     background-position: center center;
     opacity: 0.07; /* 투명도 20% */
     z-index: -1; /* .mobile-frame의 모든 컨텐츠 뒤로 보냄 */
-    border-radius: 20px; /* .mobile-frame과 동일하게 라운드 처리 */
 }
 
 .fixed-top {
@@ -402,4 +401,103 @@ main.container {
 }
 .tab-bar a.active span:last-child {
     margin-top: 8px;
+}
+
+/* ========================== 로그인 회원가입 폼 ========================== */
+.login-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* 수직 중앙 정렬 */
+    padding: 0 20px;
+    background-color: transparent;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* 폼 안의 input과 button의 공통 스타일*/
+.login-form input,
+.login-form button {
+    box-sizing: border-box;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    border: none;
+}
+
+.login-form > * + * {
+    margin-top: 15px;
+}
+
+/* 아이디, 비밀번호 input 스타일 */
+.login-form .error-message {
+    color: #d9534f;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    padding-left: 5px;
+    margin-top: 5px;
+}
+
+.login-form .error-message:empty {
+    margin: 0;
+    padding: 0;
+    height: 0;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+    width: 100%;
+    border: 1px solid #c9b19e;
+    background-color: #ffffff;
+}
+
+.login-form .error-message + input {
+    margin-top: 15px;
+}
+
+
+.login-form input[type="text"]:focus,
+.login-form input[type="password"]:focus {
+    outline: none;
+    border-color: #A47D5B;
+    box-shadow: 0 0 5px rgba(164, 125, 91, 0.5);
+}
+
+/* 1. 버튼들을 감싸는 그룹 */
+.login-form .button-group {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+/* 2. 그룹 내의 각 버튼 */
+.login-form .button-group input[type="submit"],
+.login-form .button-group button {
+    flex: 1;
+    width: 100%;
+    margin-top: 0; /* 버튼 그룹 자체의 margin-top을 사용하므로 0으로 리셋 */
+}
+
+/* 로그인 버튼 */
+.login-form input[type="submit"] {
+    background-color: #A47D5B;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* 회원가입 버튼 */
+.login-form button {
+    background-color: #E8DED6;
+    color: #5A3E2B;
+    border: 1px solid #c9b19e;
+    font-weight: bold;
+    cursor: pointer;
 }
