@@ -5,6 +5,9 @@
 </head>
 <th:block th:replace="~{./include/userBaseLayout :: setContent( ~{:: .wrap} ) }">
     <div class="wrap">
+        <script th:if="${msg}">
+            alert(`[[${msg}]]`);
+        </script>
         <div class="main-banner">
             <img src="/images/메인배너.png" alt="메인배너">
             <!-- <span class="banner-pagination">1/2</span>--> <!-- 캐러셀 안쓸거라 제거 -->
