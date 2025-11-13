@@ -8,21 +8,21 @@
     <insert id="registerMember" parameterType="MemberVO">
         INSERT INTO member(
         ID,
+        EMAIL,
         PASSWORD,
-        USERNAME,
-        EMAIL
-        ) VALUES (
+        USERNAME)
+        VALUES (
         #{id},
+        #{email},
         #{password},
-        #{username},
-        #{email}
+        #{username}
         )
     </insert>
 
     <select id="loginMember" parameterType="MemberVO" resultType="MemberVO">
         SELECT *
         FROM MEMBER
-        WHERE ID = #{id} AND PASSWORD = #{password}
+        WHERE EMAIL = #{email} AND PASSWORD = #{password}
     </select>
 
     <select id="isEmailDuplicate" parameterType="String" resultType="boolean">

@@ -20,6 +20,9 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public String registerMember(MemberVO vo) {
+        if (vo.getPassword() == null || vo.getPasswordCheck() == null || !vo.getPassword().equals(vo.getPasswordCheck())) {
+            return "PASSWORD_MISMATCH";
+        }
 
         if (memberMapper.isIdDuplicate(vo.getId())) {
             return "ID_DUPLICATE";
@@ -53,4 +56,6 @@ public class MemberServiceImpl implements MemberService {
     public boolean isEmailDuplicate(String email) {
         return memberMapper.isEmailDuplicate(email);
     }
+
+
 }
