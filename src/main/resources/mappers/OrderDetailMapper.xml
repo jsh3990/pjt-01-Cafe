@@ -26,4 +26,16 @@
                )
     </insert>
 
+    <select id="getAllMenu" resultType="MenuVO" >
+        SELECT
+            MENU_NAME AS menuName,
+            MENU_IMG AS menuImg,
+            MENU_PRICE AS menuPrice,
+            MENU_DEFINITION AS menuDefinition
+        FROM MENU
+        WHERE MENU_NAME=#{menuName}
+        ORDER BY MENU_ID ASC
+
+    </select>
+
 </mapper>

@@ -17,7 +17,6 @@
     <main>
       <div class="coffee-img"><img src="/images/image2.png" alt="아메리카노"></div>
       <h1>아메리카노</h1>
-      <p class="type">ICE</p>
       <p class="desc">
         진하게 추출한 에스프레소에 시원한 정제수를 더한 클래식 커피<br>
         깔끔한 뒷맛과 시원한 청량감으로 <br>
@@ -27,7 +26,15 @@
       <form name="orderDetailForm" action="orderComplete" method="post">
         <div class="section">
           <div class="menu-info" id="detailBtn">메뉴 상세 정보 <span>›</span></div>
-              <label class="tumbler">
+          <div class="segmented-wrap">
+            <div class="segmented" role="tablist" aria-label="Temperature">
+              <button type="button" class="segmented-btn" data-value="ice" role="tab" aria-selected="false" tabindex="0">ICE</button>
+              <button type="button" class="segmented-btn active" data-value="hot" role="tab" aria-selected="true" tabindex="0">HOT</button>
+              <span class="segmented-thumb" aria-hidden="true"></span>
+            </div>
+          </div>
+
+          <label class="tumbler">
                 <input type="checkbox" id="tumbler" name="tumbler" value="Y"> 텀블러에 주문할게요
               </label>
 
@@ -86,6 +93,59 @@
       </form>
 
     <script>
+      // DOM
+      const segmented = document.querySelector('.segmented');
+      const buttons = Array.from(document.querySelectorAll('.segmented-btn'));
+      const thumb = document.querySelector('.segmented-thumb');
+
+      // 초기 상태: active 버튼이 있는 쪽을 클래스로 표기
+      function updateContainerClass() {
+        const active = buttons.find(b => b.classList.contains('active'));
+        if (!active) return;
+        if (active.dataset.value === 'ice') {
+          segmented.classList.add('left');
+          segmented.classList.remove('right');
+        } else {
+          segmented.classList.add('right');
+          segmented.classList.remove('left');
+        }
+      }
+      updateContainerClass();
+
+      // 클릭 처리
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-selected', 'false');
+          });
+          btn.classList.add('active');
+          btn.setAttribute('aria-selected', 'true');
+
+          // (옵션) 현재 선택값을 콘솔에 출력하거나 다른 작업에 사용
+          console.log('선택:', btn.dataset.value);
+          updateContainerClass();
+        });
+
+        // 키보드 접근성: 좌/우 화살표로 이동, Enter/Space로 선택
+        btn.addEventListener('keydown', (e) => {
+          const idx = buttons.indexOf(btn);
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const prev = buttons[(idx - 1 + buttons.length) % buttons.length];
+            prev.focus();
+          } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            const next = buttons[(idx + 1) % buttons.length];
+            next.focus();
+          } else if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            btn.click();
+          }
+        });
+      });
+
+
       let appliedOptionCounts = {};
       const pricePer = 2500;
       const optionPrice = 500;
