@@ -28,13 +28,6 @@ public class OrderDetailController {
     private MenuServiceImpl menuServiceImpl;
 
     @GetMapping("/order_detail")
-<<<<<<< HEAD
-    public String order_Detail(Model model, @RequestParam("menuId") String menuId) {
-        System.out.println(menuId);
-        MenuVO menuDetail = orderDetailService.findById(menuId);
-//        List<MenuVO> menuDetail=orderDetailService.getAllMenu();
-        model.addAttribute("menuDetail", menuDetail);
-=======
     public String order_Detail(Model model,
                                @RequestParam("id") String id) {
         MenuVO menu = orderDetailService.findById(id);
@@ -43,7 +36,6 @@ public class OrderDetailController {
             return "redirect:/home/";
         }
         model.addAttribute("menu", menu);
->>>>>>> bb705bcd01ec674920f46e710c13c29d6ff5fcf0
         return "order_detail";
     }
 
@@ -57,19 +49,11 @@ public class OrderDetailController {
     public String home() {
         return "redirect:/home/main";
     }
-<<<<<<< HEAD
-
-    @GetMapping("/orderDetail")
-    public String orderDetail() {
-        return "/order_detail"; //
-    }
-=======
 //
 //    @GetMapping("/orderDetail")
 //    public String orderDetail() {
 //        return "/order_detail"; //
 //    }
->>>>>>> bb705bcd01ec674920f46e710c13c29d6ff5fcf0
 
 
 
