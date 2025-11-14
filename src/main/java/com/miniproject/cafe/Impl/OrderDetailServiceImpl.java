@@ -13,20 +13,17 @@ import java.util.List;
 @Service("OrderDetailService")
 public class OrderDetailServiceImpl implements OrderDetailService {
 
-
     @Autowired
     private OrderDetailMapper orderDetailMapper;
 
-
-
     @Override
     public List<MenuVO> getAllMenu() {
-        return List.of();
+        return orderDetailMapper.getAllMenu();
     }
 
     @Override
     public MenuVO findById(String id) {
-        return null;
+        return orderDetailMapper.findById(id);
     }
 
     @Override

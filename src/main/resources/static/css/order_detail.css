@@ -55,6 +55,7 @@ body{
 .segmented-wrap{
     width: 420px; /* 필요하면 조절 */
     max-width:95%;
+    margin-bottom: 12px;
 }
 
 /* 세그먼티드 컨테이너 */

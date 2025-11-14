@@ -4,21 +4,22 @@
 <th:block th:replace="~{./include/userBaseLayout :: setContent( ~{:: .wrap} ) }">
   <div class="wrap">
       <div class="coffee-img">
-        <img th:src="@{|/images/img/${menuDetail.menuImg}|}"
-             th:alt="${menuDetail.menuName}">
+          <img th:src="@{|/images/img/${menu.menuImg}|}"
+               th:alt="${menu.menuName}">
       </div>
       <h1 th:text="${menu.menuName}">메뉴 이름</h1>
       <p class="desc" th:utext="${menu.menuDefinition}">메뉴 설명</p>
       <form name="orderDetailForm" action="orderComplete" method="post">
         <div class="section">
           <div class="menu-info" id="detailBtn">메뉴 상세 정보 <span>›</span></div>
-          <div class="segmented-wrap">
-            <div class="segmented" role="tablist" aria-label="Temperature">
-              <button type="button" class="segmented-btn" data-value="ice" role="tab" aria-selected="false" tabindex="0">ICE</button>
-              <button type="button" class="segmented-btn active" data-value="hot" role="tab" aria-selected="true" tabindex="0">HOT</button>
-              <span class="segmented-thumb" aria-hidden="true"></span>
+            <div class="segmented-wrap"
+                 th:if="${menu.hotAvailable == 1}">
+                <div class="segmented" role="tablist" aria-label="Temperature">
+                    <button type="button" class="segmented-btn" data-value="ice" role="tab">ICE</button>
+                    <button type="button" class="segmented-btn active" data-value="hot" role="tab">HOT</button>
+                    <span class="segmented-thumb" aria-hidden="true"></span>
+                </div>
             </div>
-          </div>
 
           <label class="tumbler">
                 <input type="checkbox" id="tumbler" name="tumbler" value="Y"> 텀블러에 주문할게요
@@ -37,8 +38,8 @@
               </div>
               <div class="price" id="price"
                    th:text="${#numbers.formatInteger(menu.menuPrice, 0)} + '원'">
-                    0000원
-                </div>
+                  0000원
+              </div>
               </div>
 
               <div class="actions">
