@@ -30,6 +30,7 @@
                              class="menu-image">
                         <!-- 메뉴 정보 -->
                         <div class="menu-details">
+
                             <div class="menu-name" th:text="${item.menuName}"></div>
                             <!-- 가격 -->
                             <div class="menu-price"
@@ -38,15 +39,15 @@
                         </div>
 
                         <span class="like-button" onclick="toggleLike(this, event)">♡</span>
-                    </div>
 
+                    </div>
                 </a>
 
             </div>
         </main>
+
     </div>
 
 </th:block>
-
 <script src="/js/menu.js"></script>
 </html>
