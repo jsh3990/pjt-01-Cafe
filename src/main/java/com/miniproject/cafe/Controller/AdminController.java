@@ -17,19 +17,24 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
+    // 🔹 개행 문자 제거하는 sanitizing 메서드 추가
+    private String sanitize(String msg) {
+        if (msg == null) return "";
+        return msg.replaceAll("[\r\n]", "");  // CR/LF 제거
+    }
+
     @GetMapping("/orders")
     public String adminOrders(HttpSession session) {
-        // 세션 체크 (로그인 여부 확인)
         if (session.getAttribute("adminId") == null) {
             return "redirect:/admin/login";
         }
-        return "admin_orders"; // 관리자 주문 페이지
+        return "admin_orders";
     }
 
     // 회원가입 화면
     @GetMapping("/signup")
     public String adminSignup() {
-        return "admin_signup";  // 기존 뷰 이름 유지
+        return "admin_signup";
     }
 
     // 회원가입 처리
@@ -38,17 +43,18 @@ public class AdminController {
         try {
             adminService.register(vo);
         } catch (RuntimeException e) {
-            // 예: 아이디 중복 시 다시 회원가입 페이지로 redirect
-            return "redirect:/admin/signup?error=" + e.getMessage();
+
+            // 🔥 개행 제거 적용
+            return "redirect:/admin/signup?error=" + sanitize(e.getMessage());
         }
+
         return "redirect:/admin/login";
     }
-
 
     // 로그인 화면
     @GetMapping("/login")
     public String adminLogin() {
-        return "admin_login";  // 기존 뷰 이름 유지
+        return "admin_login";
     }
 
     // 로그인 처리
@@ -61,8 +67,11 @@ public class AdminController {
             AdminVO admin = adminService.login(id, password);
             session.setAttribute("adminId", admin.getId());
             session.setAttribute("storeName", admin.getStoreName());
+
         } catch (RuntimeException e) {
-            return "redirect:/admin/login?error=" + e.getMessage();
+
+            // 🔥 로그인 실패 메시지도 sanitize 적용
+            return "redirect:/admin/login?error=" + sanitize(e.getMessage());
         }
 
         return "redirect:/admin/orders";
@@ -73,13 +82,6 @@ public class AdminController {
     @ResponseBody
     public String checkId(@RequestParam String id) {
         int count = adminService.checkId(id);
-        if (count > 0) {
-            return "duplicate";
-        } else {
-            return "available";
-        }
+        return count > 0 ? "duplicate" : "available";
     }
-
-
-
 }
