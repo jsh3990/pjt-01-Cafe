@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <title>Java Coffee</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/admin_menu_management.css}">
+    <link rel="stylesheet" href="/css/admin_menu_management.css">
 </head>
 <body>
-<<th:block
+
+<th:block
         th:replace="~{./include/adminBaseLayout :: setContent( ~{:: .wrap} ) }"
         th:with="menuList=${menuList}">
     <div class="wrap">
@@ -84,8 +85,16 @@
 
             </main>
         </div>
-        <script src="/js/admin_menu_management.js"></script>
     </div>
 </th:block>
+
+<footer class="footer-nav">
+    <a href="menu" class="footer-nav-item active">메뉴 관리</a>
+    <a href="orders" class="footer-nav-item" >주문 관리</a>
+    <a href="revenue" class="footer-nav-item">매출 관리</a>
+    <a href="login" class="footer-nav-item ">로그인</a>
+</footer>
+
+<script src="/js/admin_menu_management.js"></script>
 </body>
 </html>
