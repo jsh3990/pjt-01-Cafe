@@ -38,7 +38,7 @@
                                     th:data-menu-id="${menu.menuId}">
                                     <td><input type="checkbox" th:value="${menu.menuId}"></td>
                                     <td th:text="${menu.menuName}">메뉴명</td>
-                                    <td th:text="${#numbers.formatInteger(menu.menuPrice, 3, 'COMMA')} + '원'">0원</td>
+                                    <td th:text="${menu.menuPrice} + '원'"></td>
                                     <td th:text="${menu.category}">카테고리</td>
                                     <td>
                                         <button class="delete-btn"
@@ -63,11 +63,11 @@
                             <label for="menuCategory">카테고리</label>
                             <select id="menuCategory" name="category" required>
                                 <option value="" disabled selected>카테고리 선택</option>
-                                <option value="coffee">커피</option>
-                                <option value="beverage">음료</option>
-                                <option value="newMenu">신메뉴</option>
-                                <option value="tea">티(Tea)</option>
-                                <option value="food">푸드</option>
+                                <option value="커피">커피</option>
+                                <option value="음료">음료</option>
+                                <option value="신메뉴">신메뉴</option>
+                                <option value="티">티(Tea)</option>
+                                <option value="푸드">푸드</option>
                             </select>
 
                             <label for="menuDescription">메뉴 설명</label>
@@ -89,10 +89,10 @@
     </th:block>
 
     <footer class="footer-nav">
-        <a href="#" class="footer-nav-item">메뉴 관리</a>
-        <a href="#" class="footer-nav-item" >주문 관리</a>
-        <a href="#" class="footer-nav-item">매출 관리</a>
-        <a href="#" class="footer-nav-item active">로그인</a>
+        <a href="menu" class="footer-nav-item">메뉴 관리</a>
+        <a href="orders" class="footer-nav-item" >주문 관리</a>
+        <a href="revenue" class="footer-nav-item">매출 관리</a>
+        <a href="login" class="footer-nav-item active">로그인</a>
     </footer>
 </body>
 </html>

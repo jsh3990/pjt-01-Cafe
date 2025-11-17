@@ -33,19 +33,24 @@ public class AdminController {
 
     // 회원가입 화면
     @GetMapping("/signup")
-    public String adminSignup() {
+    public String adminSignup(HttpSession session, Model model) {
+        Object msg = session.getAttribute("signupError");
+        if (msg != null) {
+            model.addAttribute("error", msg.toString());
+            session.removeAttribute("signupError");   // 한 번만 표시
+        }
         return "admin_signup";
     }
 
     // 회원가입 처리
     @PostMapping("/joinForm")
-    public String signup(AdminVO vo) {
+    public String signup(AdminVO vo, HttpSession session) {
         try {
             adminService.register(vo);
         } catch (RuntimeException e) {
 
-            // 개행 제거 적용
-            return "redirect:/admin/signup?error=" + sanitize(e.getMessage());
+            session.setAttribute("signupError", e.getMessage());
+            return "redirect:/admin/signup";
         }
 
         return "redirect:/admin/login";

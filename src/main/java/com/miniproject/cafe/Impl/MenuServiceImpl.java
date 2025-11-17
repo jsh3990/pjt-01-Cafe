@@ -14,38 +14,29 @@ public class MenuServiceImpl implements MenuService {
     @Autowired
     private MenuMapper menuMapper;
 
-    @Override
-    public List<MenuVO> getAllMenu() {
-        return menuMapper.getAllMenu();
-    }
-
-    @Override
-    public MenuVO getMenuById(String menuId) {
-        return menuMapper.getMenuById(menuId);
-    }
-
-    @Override
-    public List<MenuVO> getMenuByCategory(String category) {
-        return menuMapper.getMenuByCategory(category);
-    }
-
-    @Override
-    public int insertMenu(MenuVO menu) {
-        return menuMapper.insertMenu(menu);
-    }
-
-    @Override
-    public int updateMenu(MenuVO menu) {
-        return menuMapper.updateMenu(menu);
-    }
-
-    @Override
-    public int deleteMenu(String menuId) {
-        return menuMapper.deleteMenu(menuId);
-    }
 
     @Override
     public List<MenuVO> getMenuByStoreAndCategory(String storeName, String category) {
         return menuMapper.getMenuByStoreAndCategory(storeName, category);
+    }
+
+    @Override
+    public List<MenuVO> getMenuByStore(String storeName) {
+        return menuMapper.getMenuByStore(storeName);
+    }
+
+    @Override
+    public void insertMenu(MenuVO menuVO) {
+        menuMapper.insertMenu(menuVO);
+    }
+
+    @Override
+    public void deleteMenuByStore(String menuId, String storeName) {
+        menuMapper.deleteMenuByStore(menuId, storeName);
+    }
+
+    @Override
+    public String getLastMenuIdByStore(String storeName) {
+        return menuMapper.getLastMenuIdByStore(storeName);
     }
 }
