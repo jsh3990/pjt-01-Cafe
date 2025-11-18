@@ -35,5 +35,10 @@
 </footer>
 
 <script src="/js/admin_login.js"></script>
+<th:block th:if="${loginError != null}">
+    <script>
+        alert("[[${loginError}]]");
+    </script>
+</th:block>
 </body>
 </html>
