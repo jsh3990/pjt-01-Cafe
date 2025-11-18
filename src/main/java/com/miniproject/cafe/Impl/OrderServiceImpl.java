@@ -38,6 +38,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 2. orders 테이블에 저장 (여기서 DB가 생성한 orderId가 order 객체에 담김)
+        order.setOrderTime(new java.util.Date());
         orderMapper.insertOrder(order);
 
         // 3. 상세 메뉴(Item)들이 있다면, 방금 생성된 주문번호(orderId)를 넣고 저장

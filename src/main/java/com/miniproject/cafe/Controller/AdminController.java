@@ -25,10 +25,12 @@ public class AdminController {
     }
 
     @GetMapping("/orders")
-    public String adminOrders(HttpSession session) {
+    public String adminOrders(HttpSession session, Model model) {
         if (session.getAttribute("adminId") == null) {
             return "redirect:/admin/login";
         }
+        //로그인 상태 전달
+        model.addAttribute("isLoggedIn", session.getAttribute("adminId") != null);
         return "admin_orders";
     }
 
@@ -59,28 +61,37 @@ public class AdminController {
 
     // 로그인 화면
     @GetMapping("/login")
-    public String adminLogin() {
+    public String adminLogin(HttpSession session, Model model) {
+        // 세션에 adminId가 있으면 로그인 상태
+        boolean isLoggedIn = session.getAttribute("adminId") != null;
+        model.addAttribute("isLoggedIn", isLoggedIn);
+
         return "admin_login";
     }
 
     // 로그인 처리
     @PostMapping("/login")
-    public String login(@RequestParam String id,
-                        @RequestParam String password,
+    public String login(AdminVO vo, // 1. @RequestParam 대신 객체로 받으면 더 깔끔합니다.
                         HttpSession session,
                         RedirectAttributes ra) {
 
-        try {
-            AdminVO admin = adminService.login(id, password);
-            session.setAttribute("adminId", admin.getId());
-            session.setAttribute("storeName", admin.getStoreName());
+        // 2. 서비스 호출 (VO 객체를 그대로 전달)
+        AdminVO loginAdmin = adminService.login(vo);
 
-        } catch (RuntimeException e) {
-            ra.addFlashAttribute("loginError", e.getMessage());
+        // 3. 결과 확인 (null이면 로그인 실패)
+        if (loginAdmin != null) {
+            // 로그인 성공
+
+            // ⭐ [중요] HTML에서 session.admin.storeName 으로 꺼내 쓰고 있으므로
+            // 키값을 반드시 "admin"으로, 값은 객체 통째로 저장해야 합니다.
+            session.setAttribute("admin", loginAdmin);
+
+            return "redirect:/admin/orders";
+        } else {
+            // 로그인 실패
+            ra.addFlashAttribute("loginError", "아이디 또는 비밀번호가 일치하지 않습니다.");
             return "redirect:/admin/login";
         }
-
-        return "redirect:/admin/orders";
     }
 
     // 아이디 중복 체크 API
@@ -89,5 +100,12 @@ public class AdminController {
     public String checkId(@RequestParam String id) {
         int count = adminService.checkId(id);
         return count > 0 ? "duplicate" : "available";
+    }
+
+    //로그아웃 처리
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate(); // 세션 초기화
+        return "redirect:/admin/login";
     }
 }

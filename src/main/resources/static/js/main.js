@@ -108,38 +108,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function moveToMenuBySession() {
         try {
-            const resp = await fetch("/home/getRegion");
-            const region = await resp.text();
+            const response = await fetch('/home/getRegion');
 
-            if (!region || region === "null" || region === "selecting") {
-                alert("지점을 선택해주세요.");
-                return;
+            if (!response.ok) throw new Error("Network response was not ok");
+
+            const storeName = await response.text();
+
+            console.log("%c[DEBUG] 주문하기 버튼 클릭됨", "color: yellow; background: black; font-weight: bold;");
+            console.log("👉 서버 세션에서 가져온 storeName 값:", storeName);
+            console.log("👉 값의 타입:", typeof storeName);
+
+            if (storeName && storeName !== 'null' && storeName.trim() !== '' && storeName !== 'selecting') {
+                console.log("선택된 매장:", storeName);
+                window.location.href = '/menu/coffee';
+            } else {
+                alert("주문할 매장을 먼저 선택해주세요.");
+                window.location.href = '/home/';
             }
 
-            window.location.href = "/menu/coffee";
-        } catch (e) {
-            console.error("moveToMenu error:", e);
+        } catch (error) {
+            console.error("세션 확인 중 오류:", error);
+            alert("매장 정보를 확인하는 중 오류가 발생했습니다.");
+            window.location.href = '/home/';
         }
     }
 
     if (orderBtn) {
         orderBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
+            e.preventDefault(); // a 태그 기본 이동 막기
 
-            // 1) 로그인 여부 확인
+            // 1) 로그인 여부 확인 (Thymeleaf 변수 IS_LOGGED_IN 활용)
+            // IS_LOGGED_IN은 HTML 상단 script 태그에 선언되어 있어야 합니다.
             if (typeof IS_LOGGED_IN !== 'undefined' && !IS_LOGGED_IN) {
                 const loginModalOverlay = document.getElementById("login-modal-overlay");
-                if (loginModalOverlay) loginModalOverlay.classList.add("show");
-                return;
+                if (loginModalOverlay) {
+                    loginModalOverlay.classList.add("show");
+                    // 모달 닫기 버튼 이벤트 연결 (한 번만 연결되도록 체크 필요하지만 간단히 추가)
+                    const closeBtn = document.getElementById("login-modal-close");
+                    if(closeBtn) closeBtn.onclick = () => loginModalOverlay.classList.remove("show");
+                } else {
+                    alert("로그인이 필요합니다.");
+                    window.location.href = "/home/"; // 또는 로그인 페이지
+                }
+                return; // 로그인 안 했으면 여기서 중단
             }
 
-            // 2) 로그인 시 지점 확인 후 이동
+            // 2) 로그인 했다면 -> 지점 확인 후 이동 함수 호출
             await moveToMenuBySession();
         });
     }
-
-
-
 
     /* ===========================
        🔐 로그인/회원가입 모달 로직

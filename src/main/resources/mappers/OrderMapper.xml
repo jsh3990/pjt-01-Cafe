@@ -69,7 +69,7 @@
                    #{orderStatus},
                    #{totalPrice},
                    #{orderType},
-                   NOW(),
+                   #{orderTime},
                    #{totalQuantity},
                    #{storeName}
                )

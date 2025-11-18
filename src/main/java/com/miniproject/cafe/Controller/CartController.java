@@ -24,24 +24,39 @@ public class CartController {
     private CartService cartService;
 
     @GetMapping("/cart")
-    public String cartPage(Authentication auth, Model model) {
+    public String cartPage(Authentication auth, Model model, HttpSession session) {
+
+        // 1. 로그인 체크
         if (auth == null || !auth.isAuthenticated()) {
             return "redirect:/home/";
         }
 
+        // 2. 세션에서 매장 정보 가져오기 (URL 파라미터 사용 X)
+        String currentStore = (String) session.getAttribute("storeName");
+
+        // 3. 방어 로직: 세션에 매장 정보가 없으면 메인으로 튕겨내기
+        // (사용자가 매장 선택 없이 URL로 직접 접근하는 것 방지)
+        if (currentStore == null || currentStore.trim().isEmpty()) {
+            return "redirect:/home/";
+        }
+
+        model.addAttribute("storeName", currentStore);
+
+        // 5. 사용자 ID 가져오기
         String memberId = auth.getName();
         Map<String, Object> cartData;
 
         try {
+            // 6. 장바구니 데이터 조회
             cartData = cartService.getCartList(memberId);
 
-            // ✅ 빈 데이터 필터링
+            // ✅ 빈 데이터 / 오류 데이터 필터링 로직
             if (cartData != null && cartData.get("cartItems") != null) {
                 List<Map<String, Object>> cartItems = (List<Map<String, Object>>) cartData.get("cartItems");
                 List<Map<String, Object>> validItems = new ArrayList<>();
 
                 for (Map<String, Object> item : cartItems) {
-                    // 실제 메뉴 데이터가 있는지 확인 (MENU_PRICE가 0보다 큰지)
+                    // 가격 데이터 유효성 체크
                     if (item.get("MENU_PRICE") != null &&
                             Integer.parseInt(item.get("MENU_PRICE").toString()) > 0) {
                         validItems.add(item);
@@ -50,6 +65,7 @@ public class CartController {
                 cartData.put("cartItems", validItems);
             }
 
+            // 데이터가 아예 없을 경우 초기화
             if (cartData == null) {
                 cartData = new HashMap<>();
                 cartData.put("cartItems", new ArrayList<>());
@@ -63,11 +79,12 @@ public class CartController {
             cartData.put("totalPrice", 0);
         }
 
+        // 7. 뷰(HTML)로 데이터 전달
         model.addAttribute("cartItems", cartData.get("cartItems"));
         model.addAttribute("totalPrice", cartData.get("totalPrice"));
         model.addAttribute("memberId", memberId);
 
-        return "cart";
+        return "cart"; // user/cart.html 반환
     }
 
     @GetMapping("/cart/list/{memberId}")

@@ -12,7 +12,7 @@ public class OrderItemVO {
     private Long orderItemId;
     private Long orderId;
 
-    private Long menuId;
+    private String menuId;
 
     private String menuItemName; //메뉴 이름
     private int quantity; //수량
