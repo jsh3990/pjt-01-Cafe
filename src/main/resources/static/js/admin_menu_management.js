@@ -16,6 +16,25 @@ document.addEventListener('DOMContentLoaded', function() {
         menuPriceInput.addEventListener('input', formatPriceInput);
     }
 
+    /* 2,000원 에서 '원' 제거 */
+    const newMenuForm = document.getElementById("newMenuForm");
+
+    if (newMenuForm) {
+        // hidden input 생성
+        let hiddenPriceInput = document.createElement("input");
+        hiddenPriceInput.type = "hidden";
+        hiddenPriceInput.name = "menuPrice";
+        newMenuForm.appendChild(hiddenPriceInput);
+
+        newMenuForm.addEventListener("submit", function(e) {
+            // "2,000원" → "2000"
+            const rawValue = menuPriceInput.value.replace(/[^0-9]/g, "");
+            hiddenPriceInput.value = rawValue;   // 전송할 값은 숫자만
+
+            menuPriceInput.disabled = true;
+        });
+    }
+
     // 개별 삭제
     document.querySelector('.menu-table').addEventListener('click', function(e) {
         if (e.target.classList.contains('delete-btn')) {
@@ -58,4 +77,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    let fileInput = document.getElementById('menuImage');
+    let imageBox = document.querySelector('.image-upload-box');
+
+    fileInput.addEventListener('change', (e) => {
+        let file = e.target.files[0];
+        if (file) {
+            let img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
+            imageBox.innerHTML = "";
+            imageBox.appendChild(img);
+        }
+    });
+
+
 });
