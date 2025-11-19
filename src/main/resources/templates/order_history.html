@@ -24,7 +24,9 @@
                     <div class="order-item">
 
                         <div class="order-item-image">
-                            <img th:src="@{|/images/${item.menuImg}|}" th:alt="${item.menuName}">
+                            <img th:src="@{'/upload/' + ${item.menuImg}}"
+                                 th:alt="${item.menuName}"
+                                 class="menu-image">
                         </div>
 
                         <div class="order-item-details">

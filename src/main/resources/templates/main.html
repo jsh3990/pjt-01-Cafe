@@ -49,7 +49,9 @@
                     </th:block>
                     <th:block th:each="item : ${recentOrders}">
                         <a th:href="@{'/home/order_history'}" class="previous-order-item login-required">
-                            <img th:src="@{|/images/${item.menuImg}|}" th:alt="${item.menuName}">
+                            <img th:src="@{'/upload/' + ${item.menuImg}}"
+                                 th:alt="${item.menuName}"
+                                 class="menu-image">
                             <p class="item-name" th:text="${item.menuName}"></p>
                         </a>
                     </th:block>
