@@ -46,6 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let userRegion = document.getElementById('userRegion');
     let orderBtn = document.getElementById('orderBtn');
+    const isHomePage =
+        window.location.pathname === '/home' ||
+        window.location.pathname === '/home/';
 
 
     /* ===========================
@@ -127,30 +130,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     if (orderBtn) {
-        const isHomePage =
-            window.location.pathname === '/home/';
+        orderBtn.addEventListener("click", (e) => {
+            e.preventDefault();
 
-        if (isHomePage && userRegion) {
-            orderBtn.addEventListener("click", (e) => {
+            // 1) 로그인 여부 확인 (기존 로직 유지)
+            if (typeof IS_LOGGED_IN !== 'undefined' && !IS_LOGGED_IN) {
                 e.preventDefault();
+                const overlay = document.getElementById("login-modal-overlay");
+                if (overlay) overlay.classList.add("show");
+                else alert("로그인이 필요합니다.");
+                return;
+            }
 
-                // 1) 로그인 여부 확인 (기존 로직 유지)
-                if (typeof IS_LOGGED_IN !== 'undefined' && !IS_LOGGED_IN) {
-                    const loginModalOverlay = document.getElementById("login-modal-overlay");
-                    if (loginModalOverlay) {
-                        loginModalOverlay.classList.add("show");
-                        const closeBtn = document.getElementById("login-modal-close");
-                        if (closeBtn) closeBtn.onclick = () => loginModalOverlay.classList.remove("show");
-                    } else {
-                        alert("로그인이 필요합니다.");
-                        window.location.href = "/home/";
-                    }
+            if (isHomePage) {
+                if (!userRegion || !userRegion.value || userRegion.value === "none") {
+                    e.preventDefault();
+                    alert("주문할 매장을 먼저 선택해주세요.");
                     return;
                 }
+            }
 
-                goToMenu();
-            });
-        }
+            // 🔥 모든 페이지에서 메뉴 페이지로 이동
+            window.location.href = "/menu/coffee";
+        });
     }
 
     /* ===========================
