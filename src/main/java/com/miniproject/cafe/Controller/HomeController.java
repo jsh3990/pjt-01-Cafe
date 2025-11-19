@@ -100,9 +100,6 @@ public class HomeController {
             return "redirect:/home/";
         }
         MemberVO member = (MemberVO) session.getAttribute("member");
-        if(member == null) {
-            return "redirect:/home/";
-        }
         model.addAttribute("member", member);
         return "mypage";
     }

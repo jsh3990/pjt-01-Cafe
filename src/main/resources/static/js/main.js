@@ -116,42 +116,45 @@ document.addEventListener('DOMContentLoaded', () => {
        3. 주문하기 버튼 (로그인 확인 + 지점 확인)
     ============================================================ */
 
-    function goToMenu() {
-        const selected = userRegion.value;
+    async function checkAndGoToMenu() {
+        // 세션에서 storeName 가져오기
+        try {
+            const resp = await fetch("/home/getRegion");
+            const storeName = await resp.text();
 
-        if (!selected || selected === "none") {
-            alert("주문할 매장을 먼저 선택해주세요.");
-            return;
+            // 지점 선택 안 했을 때
+            if (!storeName || storeName === "null" || storeName.trim() === "") {
+                alert("주문할 매장을 먼저 선택해주세요.");
+                // 홈으로 이동
+                window.location.href = '/home/';
+                return false;
+            }
+
+            // 매장 선택이 되어 있으면 메뉴 페이지로 이동
+            window.location.href = '/menu/coffee';
+            return true;
+        } catch (error) {
+            console.error("매장 확인 중 오류:", error);
+            alert("매장 정보를 확인하는 중 오류가 발생했습니다.");
+            window.location.href = '/home/';
+            return false;
         }
-
-        // 선택된 매장이 화면에 존재하므로 즉시 이동
-        window.location.href = '/menu/coffee';
     }
 
-
     if (orderBtn) {
-        orderBtn.addEventListener("click", (e) => {
+        orderBtn.addEventListener("click", async (e) => {
             e.preventDefault();
 
-            // 1) 로그인 여부 확인 (기존 로직 유지)
+            // 1) 로그인 여부 확인
             if (typeof IS_LOGGED_IN !== 'undefined' && !IS_LOGGED_IN) {
-                e.preventDefault();
                 const overlay = document.getElementById("login-modal-overlay");
                 if (overlay) overlay.classList.add("show");
                 else alert("로그인이 필요합니다.");
                 return;
             }
 
-            if (isHomePage) {
-                if (!userRegion || !userRegion.value || userRegion.value === "none") {
-                    e.preventDefault();
-                    alert("주문할 매장을 먼저 선택해주세요.");
-                    return;
-                }
-            }
-
-            // 🔥 모든 페이지에서 메뉴 페이지로 이동
-            window.location.href = "/menu/coffee";
+            // 2) 매장 선택 여부 확인 및 이동
+            await checkAndGoToMenu();
         });
     }
 
