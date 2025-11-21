@@ -14,16 +14,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationProvider;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
-import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.oidc.authentication.OidcAuthorizationCodeAuthenticationProvider;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -32,9 +29,8 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.RememberMeServices;
-import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
-import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -51,22 +47,13 @@ public class SecurityConfig {
     private final MemberMapper memberMapper;
     private final AdminMapper adminMapper;
 
-    private static final String REMEMBER_ME_KEY = "secure-key";
+    private static final String REMEMBER_KEY = "secure-key";
 
-    // ============================================================
-    // 0. AuthenticationProvider 명시적 등록
-    // ============================================================
-
+    /* ======================
+       Authentication Providers
+    ======================= */
     @Bean
-    public AuthenticationProvider adminAuthenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(adminUserDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
-    }
-
-    @Bean
-    public AuthenticationProvider userAuthenticationProvider() {
+    public AuthenticationProvider userProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(customUserDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
@@ -74,90 +61,79 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationProvider oauth2AuthenticationProvider() {
-        OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient = new DefaultAuthorizationCodeTokenResponseClient();
-        return new OAuth2LoginAuthenticationProvider(accessTokenResponseClient, customOAuth2UserService);
+    public AuthenticationProvider adminProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(adminUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean
-    public AuthenticationProvider oidcAuthenticationProvider() {
-        OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient = new DefaultAuthorizationCodeTokenResponseClient();
-        OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService = new OidcUserService();
-        return new OidcAuthorizationCodeAuthenticationProvider(accessTokenResponseClient, oidcUserService);
-    }
-
-
-    @Bean
-    public RememberMeServices rememberMeServices() {
-        TokenBasedRememberMeServices services = new TokenBasedRememberMeServices(
-                REMEMBER_ME_KEY,
-                customUserDetailsService
+    public AuthenticationProvider oauth2Provider() {
+        return new OAuth2LoginAuthenticationProvider(
+                new DefaultAuthorizationCodeTokenResponseClient(),
+                customOAuth2UserService
         );
-        services.setAlwaysRemember(false);
-        services.setTokenValiditySeconds(60 * 60 * 24 * 14);
-        services.setCookieName("remember-me");
-        services.setParameter("remember-me");
-        return services;
     }
 
     @Bean
-    public RememberMeServices oauthRememberMeServices() {
-        TokenBasedRememberMeServices services = new TokenBasedRememberMeServices(
-                REMEMBER_ME_KEY,
-                customUserDetailsService
+    public AuthenticationProvider oidcProvider() {
+        OAuth2UserService<OidcUserRequest, OidcUser> oidc = new OidcUserService();
+        return new OidcAuthorizationCodeAuthenticationProvider(
+                new DefaultAuthorizationCodeTokenResponseClient(),
+                oidc
         );
-        services.setAlwaysRemember(true);
-        services.setTokenValiditySeconds(60 * 60 * 24 * 14);
-        services.setCookieName("remember-me");
-        return services;
     }
 
-    @Bean
+    /* ======================
+         Remember-Me
+    ======================= */
+    private RememberMeServices memberRememberMe() {
+        TokenBasedRememberMeServices s =
+                new TokenBasedRememberMeServices(REMEMBER_KEY, customUserDetailsService);
+        s.setTokenValiditySeconds(60 * 60 * 24 * 14);
+        return s;
+    }
+
+    private RememberMeServices oauthRememberMe() {
+        TokenBasedRememberMeServices s =
+                new TokenBasedRememberMeServices(REMEMBER_KEY, customUserDetailsService);
+        s.setAlwaysRemember(true);
+        s.setTokenValiditySeconds(60 * 60 * 24 * 14);
+        return s;
+    }
+
+    @Bean("adminRememberMeServices")
     public RememberMeServices adminRememberMeServices() {
-        TokenBasedRememberMeServices services = new TokenBasedRememberMeServices(
-                REMEMBER_ME_KEY,
-                adminUserDetailsService
-        );
-        services.setAlwaysRemember(false);
-        services.setTokenValiditySeconds(60 * 60 * 24 * 14);
+        TokenBasedRememberMeServices services =
+                new TokenBasedRememberMeServices("secure-key", adminUserDetailsService);
         services.setCookieName("remember-me-admin");
-        services.setParameter("remember-me");
+        services.setTokenValiditySeconds(60 * 60 * 24 * 14);
         return services;
     }
 
-    // ============================================================
-    // 2. Handlers
-    // ============================================================
-
-    @Bean
-    public OAuthLoginSuccessHandler oAuthLoginSuccessHandler() {
-        return new OAuthLoginSuccessHandler(memberMapper, oauthRememberMeServices());
-    }
-
-    @Bean
-    public FormLoginSuccessHandler formLoginSuccessHandler() {
-        return new FormLoginSuccessHandler(memberMapper, rememberMeServices());
-    }
-
-    // ============================================================
-    // 3. Security Filter Chains
-    // ============================================================
-
+    /* ======================
+         관리자 Security
+    ======================= */
     @Bean
     @Order(1)
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/admin/**")
-                .authenticationProvider(adminAuthenticationProvider()) // 관리자용 Provider
+                .authenticationProvider(adminProvider())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/login", "/admin/signup", "/admin/joinForm", "/admin/checkId", "/admin/css/**", "/admin/js/**").permitAll()
+                        .requestMatchers(
+                                "/admin/login", "/admin/signup", "/admin/joinForm",
+                                "/admin/checkId", "/admin/css/**", "/admin/js/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/admin/login")
                         .loginProcessingUrl("/admin/perform_login_process")
-                        .permitAll()
+                        .defaultSuccessUrl("/admin/orders", true)
+                        .failureHandler(formLoginFailureHandler)
                 )
                 .logout(logout -> logout
                         .logoutUrl("/admin/logout")
@@ -168,22 +144,26 @@ public class SecurityConfig {
                 .rememberMe(r -> r
                         .rememberMeServices(adminRememberMeServices())
                 )
-                .addFilterAfter(new SessionSetupFilter(memberMapper, adminMapper), SecurityContextHolderFilter.class);
+                .addFilterAfter(new SessionSetupFilter(memberMapper, adminMapper),
+                        RememberMeAuthenticationFilter.class);
 
         return http.build();
     }
 
+    /* ======================
+        사용자 Security
+    ======================= */
     @Bean
     @Order(2)
-    public SecurityFilterChain userFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain userChain(HttpSecurity http) throws Exception {
+
         http
-                // [핵심] 사용자용(Form) + OAuth2용 Provider들을 모두 등록해줘야 합니다.
-                .authenticationProvider(userAuthenticationProvider())
-                .authenticationProvider(oauth2AuthenticationProvider()) // [추가] OAuth2 Provider
-                .authenticationProvider(oidcAuthenticationProvider())   // [추가] OIDC Provider (구글 등)
+                .authenticationProvider(userProvider())
+                .authenticationProvider(oauth2Provider())
+                .authenticationProvider(oidcProvider())
 
                 .csrf(csrf -> csrf.disable())
-                .headers(h -> h.frameOptions(f -> f.sameOrigin()))
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/upload/**").permitAll()
                         .requestMatchers("/api/member/**", "/oauth2/**", "/login").permitAll()
@@ -193,32 +173,32 @@ public class SecurityConfig {
                         .requestMatchers("/home/**").authenticated()
                         .anyRequest().permitAll()
                 )
+
                 .formLogin(f -> f
                         .loginPage("/home/login")
                         .loginProcessingUrl("/login")
-                        .successHandler(formLoginSuccessHandler())
+                        .successHandler(new FormLoginSuccessHandler(memberMapper, memberRememberMe()))
                         .failureHandler(formLoginFailureHandler)
-                        .permitAll()
                 )
-                .oauth2Login(oauth2 -> oauth2
+
+                .oauth2Login(o -> o
                         .loginPage("/home/login")
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)
-                        )
-                        .successHandler(oAuthLoginSuccessHandler())
+                        .userInfoEndpoint(e -> e.userService(customOAuth2UserService))
+                        .successHandler(new OAuthLoginSuccessHandler(memberMapper, oauthRememberMe()))
                         .failureHandler(oAuth2FailureHandler)
                 )
-                .logout(logout -> logout
+
+                .logout(l -> l
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/home/login")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
                         .deleteCookies("JSESSIONID", "remember-me")
+                        .invalidateHttpSession(true)
                 )
-                .rememberMe(r -> r
-                        .rememberMeServices(rememberMeServices())
-                )
-                .addFilterAfter(new SessionSetupFilter(memberMapper, adminMapper), SecurityContextHolderFilter.class);
+
+                .rememberMe(r -> r.rememberMeServices(memberRememberMe()))
+
+                .addFilterAfter(new SessionSetupFilter(memberMapper, adminMapper),
+                        RememberMeAuthenticationFilter.class);
 
         return http.build();
     }
