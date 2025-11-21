@@ -27,22 +27,22 @@ public class OAuthLoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(
             HttpServletRequest request,
             HttpServletResponse response,
-            Authentication authentication) throws IOException {
+            Authentication authentication) {
 
         rememberMeServices.loginSuccess(request, response, authentication);
 
         String email = authentication.getName();
         MemberVO member = memberMapper.findByEmail(email);
 
-        if (member == null) {
-            response.sendRedirect("/home/login?oauth_error=user_not_found");
-            return;
+        if (member != null) {
+            request.getSession().setAttribute("member", member);
         }
 
-        request.getSession().setAttribute("member", member);
-
-        String encodedName = URLEncoder.encode(member.getUsername(), StandardCharsets.UTF_8);
-
-        response.sendRedirect("/home/?oauthSuccess=true&username=" + encodedName);
+        try {
+            response.sendRedirect("/home/?oauthSuccess=true&username=" +
+                    java.net.URLEncoder.encode(member.getUsername(), "UTF-8"));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

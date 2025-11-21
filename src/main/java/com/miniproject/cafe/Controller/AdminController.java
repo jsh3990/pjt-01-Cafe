@@ -26,28 +26,18 @@ import java.util.Collections;
 public class AdminController {
 
     private final AdminService adminService;
-    private final RememberMeServices adminRememberMeServices;
 
-    // [중요] 생성자 주입 시 @Qualifier를 사용하여 관리자용 RememberMeServices를 지정합니다.
-    public AdminController(AdminService adminService,
-                           @Qualifier("adminRememberMeServices") RememberMeServices adminRememberMeServices) {
+    public AdminController(AdminService adminService) {
         this.adminService = adminService;
-        this.adminRememberMeServices = adminRememberMeServices;
     }
 
-    private String sanitize(String msg) {
-        if (msg == null) return "";
-        return msg.replaceAll("[\r\n]", "");
-    }
-
-    @GetMapping("/orders")
-    public String adminOrders(HttpSession session, Model model) {
-        if (session.getAttribute("admin") == null) {
-            return "redirect:/admin/login";
+    @GetMapping("/login")
+    public String adminLogin(HttpSession session, Model model) {
+        if (session.getAttribute("loginError") != null) {
+            model.addAttribute("loginError", session.getAttribute("loginError"));
+            session.removeAttribute("loginError");
         }
-        model.addAttribute("isLoggedIn", true);
-        model.addAttribute("activePage", "orders");
-        return "admin_orders";
+        return "admin_login";
     }
 
     @GetMapping("/signup")
@@ -71,63 +61,19 @@ public class AdminController {
         return "redirect:/admin/login";
     }
 
-    @GetMapping("/login")
-    public String adminLogin(HttpSession session, Model model) {
-        if (session.getAttribute("loginError") != null) {
-            model.addAttribute("loginError", session.getAttribute("loginError"));
-            session.removeAttribute("loginError");
-        }
-        return "admin_login";
-    }
-
-    // [관리자 로그인 처리]
-    @PostMapping("/login")
-    public String login(AdminVO vo,
-                        HttpServletRequest request,
-                        HttpServletResponse response,
-                        HttpSession session,
-                        RedirectAttributes ra) {
-
-        // 1. 서비스 호출 (ID/PW 검증)
-        AdminVO loginAdmin = adminService.login(vo);
-
-        if (loginAdmin != null) {
-            // 2. 세션 저장
-            session.setAttribute("admin", loginAdmin);
-
-            // 3. Spring Security 인증 객체 생성 및 컨텍스트 설정
-            // (권한은 ROLE_ADMIN 부여)
-            Authentication auth = new UsernamePasswordAuthenticationToken(
-                    loginAdmin.getId(),
-                    null,
-                    Collections.singleton(new SimpleGrantedAuthority("ROLE_ADMIN"))
-            );
-
-            SecurityContext sc = SecurityContextHolder.createEmptyContext();
-            sc.setAuthentication(auth);
-            SecurityContextHolder.setContext(sc);
-
-            // 4. [핵심] Remember-Me 쿠키 생성 (자동 로그인 체크 시)
-            adminRememberMeServices.loginSuccess(request, response, auth);
-
-            return "redirect:/admin/orders";
-        } else {
-            // 로그인 실패
-            session.setAttribute("loginError", "아이디 또는 비밀번호가 일치하지 않습니다.");
+    @GetMapping("/orders")
+    public String adminOrders(HttpSession session, Model model) {
+        if (session.getAttribute("admin") == null) {
             return "redirect:/admin/login";
         }
+        model.addAttribute("isLoggedIn", true);
+        model.addAttribute("activePage", "orders");
+        return "admin_orders";
     }
 
     @GetMapping("/checkId")
     @ResponseBody
     public String checkId(@RequestParam String id) {
-        int count = adminService.checkId(id);
-        return count > 0 ? "duplicate" : "available";
-    }
-
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/admin/login";
+        return adminService.checkId(id) > 0 ? "duplicate" : "available";
     }
 }
