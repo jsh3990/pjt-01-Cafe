@@ -177,12 +177,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ================= "선택" 클릭 → 전체 선택 =================
+    document.querySelector("th.text-center:nth-child(1)").addEventListener("click", function () {
+        const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+
+        // 현재 상태 확인
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
+        // 반전해서 적용
+        checkboxes.forEach(cb => cb.checked = !allChecked);
+    });
+
 
     /** ---------------- 수정 버튼 이동 ---------------- */
     document.querySelectorAll(".edit-menu-btn").forEach(btn => {
         btn.addEventListener("click", function(e) {
             e.stopPropagation();
             const menuId = this.dataset.id;
+            console.log("Clicked menuId:", menuId);
             window.location.href = `/admin/updateMenu/${menuId}`;
         });
     });

@@ -60,7 +60,9 @@
             STORE_NAME AS storeName
         FROM MENU
         WHERE MENU_ID = #{menuId}
+          AND STORE_NAME = #{storeName}
     </select>
+
 
 
     <update id="updateMenu" parameterType="com.miniproject.cafe.VO.MenuVO">

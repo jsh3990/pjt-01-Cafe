@@ -16,42 +16,38 @@ import java.util.Map;
 @Controller
 @RequestMapping("/admin")
 public class AdminMenuController {
+
     @Autowired
     private MenuService menuService;
 
+    /** ================= 메뉴 관리 리스트 ================= */
     @GetMapping("/menu")
     public String menuManagement(Model model, HttpSession session) {
-
         AdminVO admin = (AdminVO) session.getAttribute("admin");
-        if (admin == null) {
-            return "redirect:/admin/login";
-        }
+        if (admin == null) return "redirect:/admin/login";
 
         String storeName = admin.getStoreName();
 
         model.addAttribute("isLoggedIn", true);
         model.addAttribute("activePage", "menu");
+        model.addAttribute("menuList", menuService.getMenuByStore(storeName));
 
-        List<MenuVO> menuList = menuService.getMenuByStore(storeName);
-
-        model.addAttribute("menuList", menuList);
-        model.addAttribute("storeName", storeName);
+        Boolean updated = (Boolean) session.getAttribute("updateSuccess");
+        model.addAttribute("updateSuccess", updated);
+        session.removeAttribute("updateSuccess");
 
         return "admin_menu_management";
     }
 
-    // 메뉴 등록 페이지
-    @GetMapping("/insertMenu")
-    public String insertMenuPage() {
-        return "admin_insert_menu";
-    }
 
-    // 메뉴 등록 처리
+    /** ================= 신규 메뉴 등록 ================= */
     @PostMapping("/insertMenu")
-    public String insertMenu(MenuVO vo,
-                             @RequestParam(value = "menuImgFile", required = false) MultipartFile file,
-                             @RequestParam("temperature") String temperature,
-                             HttpSession session) {
+    public String insertMenu(
+            MenuVO vo,
+            @RequestParam(value = "menuImgFile", required = false) MultipartFile file,
+            @RequestParam("temperature") String temperature,
+            HttpSession session
+    ) {
 
         AdminVO admin = (AdminVO) session.getAttribute("admin");
         if (admin == null) throw new RuntimeException("관리자 로그인 정보가 없습니다.");
@@ -59,14 +55,16 @@ public class AdminMenuController {
         String storeName = admin.getStoreName();
         vo.setStoreName(storeName);
 
-        // 메뉴 ID 생성
         String prefix = getStorePrefix(storeName);
         String lastId = menuService.getLastMenuIdByStore(storeName);
+
         String newMenuId = generateNextId(prefix, lastId);
         vo.setMenuId(newMenuId);
 
-        // temperature → DB hotAvailable
         vo.setHotAvailable("AVAILABLE".equals(temperature) ? 1 : 0);
+
+        // 기본 판매 상태
+        if (vo.getSalesStatus() == null) vo.setSalesStatus("판매중");
 
         // 이미지 처리
         if (file != null && !file.isEmpty()) {
@@ -79,7 +77,6 @@ public class AdminMenuController {
             try {
                 java.io.File dir = new java.io.File(filePath);
                 if (!dir.exists()) dir.mkdirs();
-
                 file.transferTo(new java.io.File(filePath + fileName));
                 vo.setMenuImg(fileName);
             } catch (Exception e) {
@@ -90,15 +87,11 @@ public class AdminMenuController {
             vo.setMenuImg("default.png");
         }
 
-        if (vo.getSalesStatus() == null) vo.setSalesStatus("판매중");
-
         menuService.insertMenu(vo);
-
         return "redirect:/admin/menu";
     }
 
-
-
+    /** ================= 매장 prefix ================= */
     private String getStorePrefix(String storeName) {
         switch (storeName) {
             case "강남중앙점": return "GN";
@@ -108,87 +101,51 @@ public class AdminMenuController {
         }
     }
 
+    /** ================= 안전한 ID 생성 ================= */
     private String generateNextId(String prefix, String lastId) {
-        if (lastId == null) {
+        if (lastId == null || lastId.length() < prefix.length() + 1) {
             return prefix + "001";
         }
-        String numberPart = lastId.substring(prefix.length());
-        int nextNum = Integer.parseInt(numberPart) + 1;
+
+        String numberPart;
+        try {
+            numberPart = lastId.substring(prefix.length());
+        } catch (Exception e) {
+            return prefix + "001";
+        }
+
+        int nextNum;
+        try {
+            nextNum = Integer.parseInt(numberPart) + 1;
+        } catch (Exception e) {
+            return prefix + "001";
+        }
+
         return prefix + String.format("%03d", nextNum);
     }
 
-    // 개별 삭제 API
-    @DeleteMapping("/deleteMenu/{id}")
-    @ResponseBody
-    public String deleteMenu(@PathVariable("id") String menuId, HttpSession session) {
-
-        AdminVO admin = (AdminVO) session.getAttribute("admin");
-        if (admin == null) return "fail";
-
-        String storeName = admin.getStoreName();
-        menuService.deleteMenuByStore(menuId, storeName);
-
-        return "success";
-    }
-
-    // 선택 삭제 API
-    @PostMapping("/deleteMenuBatch")
-    @ResponseBody
-    public String deleteMenuBatch(@RequestBody List<String> ids, HttpSession session) {
-
-        AdminVO admin = (AdminVO) session.getAttribute("admin");
-        if (admin == null) return "fail";
-
-        String storeName = admin.getStoreName();
-
-        for (String id : ids) {
-            menuService.deleteMenuByStore(id, storeName);
-        }
-
-        return "success";
-    }
-
-    @PostMapping("/updateStatus")
-    @ResponseBody
-    public String updateMenuStatus(@RequestBody Map<String, String> data, HttpSession session) {
-
-        AdminVO admin = (AdminVO) session.getAttribute("admin");
-        if (admin == null) return "fail";
-
-        String menuId = data.get("menuId");
-        String status = data.get("status");
-        String storeName = admin.getStoreName();
-
-        menuService.updateSalesStatus(menuId, storeName, status);
-
-        return "success";
-    }
-
+    /** ================= 수정 페이지 ================= */
     @GetMapping("/updateMenu/{menuId}")
     public String updateMenuPage(@PathVariable String menuId, Model model, HttpSession session) {
 
         AdminVO admin = (AdminVO) session.getAttribute("admin");
         if (admin == null) return "redirect:/admin/login";
 
+        MenuVO menu = menuService.getMenuById(menuId, admin.getStoreName());
+
         model.addAttribute("isLoggedIn", true);
         model.addAttribute("activePage", "menu");
-
-        MenuVO menu = menuService.getMenuById(menuId);
-
         model.addAttribute("menu", menu);
         model.addAttribute("menuList", menuService.getMenuByStore(admin.getStoreName()));
 
         Boolean updated = (Boolean) session.getAttribute("updateSuccess");
         model.addAttribute("updateSuccess", updated);
-
         session.removeAttribute("updateSuccess");
 
         return "admin_menu_management";
     }
 
-
-
-
+    /** ================= 수정 처리 ================= */
     @PostMapping("/updateMenu")
     public String updateMenu(
             MenuVO vo,
@@ -203,6 +160,14 @@ public class AdminMenuController {
         vo.setStoreName(admin.getStoreName());
         vo.setHotAvailable("AVAILABLE".equals(temperature) ? 1 : 0);
 
+        MenuVO original = menuService.getMenuById(vo.getMenuId(), admin.getStoreName());
+
+        /** ⭐ 판매상태 값 없으면 기존값 유지 */
+        if (vo.getSalesStatus() == null) {
+            vo.setSalesStatus(original.getSalesStatus());
+        }
+
+        // 이미지 적용
         if (file != null && !file.isEmpty()) {
             String originalName = file.getOriginalFilename();
             String ext = originalName.substring(originalName.lastIndexOf("."));
@@ -220,18 +185,47 @@ public class AdminMenuController {
                 e.printStackTrace();
             }
         } else {
-            MenuVO original = menuService.getMenuById(vo.getMenuId());
             vo.setMenuImg(original.getMenuImg());
         }
 
         menuService.updateMenu(vo);
-
-        // 수정 완료 알림 플래그 설정
         session.setAttribute("updateSuccess", true);
 
-        return "redirect:/admin/updateMenu/" + vo.getMenuId();
+        return "redirect:/admin/menu";
     }
 
+    /** ================= 삭제 ================= */
+    @DeleteMapping("/deleteMenu/{id}")
+    @ResponseBody
+    public String deleteMenu(@PathVariable("id") String menuId, HttpSession session) {
+        AdminVO admin = (AdminVO) session.getAttribute("admin");
+        if (admin == null) return "fail";
 
+        menuService.deleteMenuByStore(menuId, admin.getStoreName());
+        return "success";
+    }
 
+    /** ================= 선택 삭제 ================= */
+    @PostMapping("/deleteMenuBatch")
+    @ResponseBody
+    public String deleteMenuBatch(@RequestBody List<String> ids, HttpSession session) {
+        AdminVO admin = (AdminVO) session.getAttribute("admin");
+        if (admin == null) return "fail";
+
+        for (String id : ids) {
+            menuService.deleteMenuByStore(id, admin.getStoreName());
+        }
+        return "success";
+    }
+
+    /** ================= 판매 상태 변경 ================= */
+    @PostMapping("/updateStatus")
+    @ResponseBody
+    public String updateMenuStatus(@RequestBody Map<String, String> data, HttpSession session) {
+        AdminVO admin = (AdminVO) session.getAttribute("admin");
+        if (admin == null) return "fail";
+
+        menuService.updateSalesStatus(data.get("menuId"), admin.getStoreName(), data.get("status"));
+        return "success";
+    }
 }
