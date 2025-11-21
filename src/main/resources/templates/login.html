@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - Fresh & Cozy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/login.css}">
@@ -20,47 +21,68 @@
                 </div>
 
                 <div class="login-bottom-section">
+
                     <!-- 1. 초기 로그인 화면 -->
                     <div id="login-options-group" class="btn-group fade-in">
                         <a href="/oauth2/authorization/kakao" class="login-btn btn-kakao-full">
-                            <img src="https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png" alt="Kakao" class="social-icon-inside-btn"> 카카오 로그인
+                            <img src="https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png"
+                                 alt="Kakao" class="social-icon-inside-btn">
+                            카카오 로그인
                         </a>
-                        <button type="button" id="show-social-login-btn" class="login-btn btn-other-login">다른 방법으로 로그인</button>
+                        <button type="button" id="show-social-login-btn" class="login-btn btn-other-login">
+                            다른 방법으로 로그인
+                        </button>
                     </div>
 
                     <!-- 2. 소셜 로그인 선택 화면 -->
                     <div id="social-login-group" class="btn-group hidden-group">
                         <a href="/oauth2/authorization/naver" class="login-btn btn-naver-full">
-                            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/naver.svg" alt="Naver" class="social-icon-inside-btn" style="filter: invert(1);"> 네이버 로그인
+                            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/naver.svg"
+                                 alt="Naver" class="social-icon-inside-btn" style="filter: invert(1);">
+                            네이버 로그인
                         </a>
                         <a href="/oauth2/authorization/google" class="login-btn btn-google-full">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" class="social-icon-inside-btn"> Google 로그인
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
+                                 alt="Google" class="social-icon-inside-btn">
+                            Google 로그인
                         </a>
-                        <button type="button" id="email-login-btn" class="login-btn btn-normal-full">일반 로그인</button>
-                        <button type="button" id="back-to-login-btn" class="login-btn btn-cancel">취소</button>
+                        <button type="button" id="email-login-btn" class="login-btn btn-normal-full">
+                            일반 로그인
+                        </button>
+                        <button type="button" id="back-to-login-btn" class="login-btn btn-cancel">
+                            취소
+                        </button>
                     </div>
 
-                    <!-- 일반 로그인 입력 폼 -->
+                    <!-- 3. 일반 로그인 입력 폼 -->
                     <div id="email-login-form" class="btn-group hidden-group">
                         <form id="login-real-form" class="signup-form-container">
                             <input type="text" name="username" placeholder="이메일" class="login-input" required>
                             <input type="password" name="password" placeholder="비밀번호" class="login-input" required>
+
                             <div class="remember-me-container">
                                 <input type="checkbox" id="remember-me" name="remember-me">
                                 <label for="remember-me">로그인 상태 유지</label>
                             </div>
-                            <button type="submit" class="login-btn btn-normal-full">로그인</button>
+
+                            <button type="submit" class="login-btn btn-normal-full">
+                                로그인
+                            </button>
                         </form>
-                        <button type="button" id="back-to-login-options-btn" class="login-btn btn-cancel">취소</button>
+                        <button type="button" id="back-to-login-options-btn" class="login-btn btn-cancel">
+                            취소
+                        </button>
                     </div>
 
-                    <!-- 3. 회원가입 토글 버튼 -->
+                    <!-- 4. 회원가입 토글 버튼 -->
                     <div id="signup-initial-section" class="signup-or-login-toggle-section fade-in">
                         <div class="divider-with-text"><span class="text">또는</span></div>
-                        <button type="button" id="show-signup-options-btn" class="login-btn btn-other-login signup-toggle-btn">회원가입</button>
+                        <button type="button" id="show-signup-options-btn" class="login-btn btn-other-login signup-toggle-btn">
+                            회원가입
+                        </button>
                     </div>
 
-                    <!-- 4. 회원가입 방식 선택 -->
+                    <!-- 5. 회원가입 방식 선택 -->
                     <div id="social-signup-group" class="btn-group hidden-group">
                         <a href="/oauth2/authorization/kakao" class="login-btn btn-kakao-full">
                             <img src="https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png" alt="Kakao" class="social-icon-inside-btn"> 카카오 회원가입
@@ -71,11 +93,15 @@
                         <a href="/oauth2/authorization/google?mode=signup" class="login-btn btn-google-full">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Signup" class="social-icon-inside-btn"> Google 회원가입
                         </a>
-                        <button type="button" id="email-signup-btn" class="login-btn btn-normal-full">일반 회원가입</button>
-                        <button type="button" id="back-to-main-btn" class="login-btn btn-cancel">취소</button>
+                        <button type="button" id="email-signup-btn" class="login-btn btn-normal-full">
+                            일반 회원가입
+                        </button>
+                        <button type="button" id="back-to-main-btn" class="login-btn btn-cancel">
+                            취소
+                        </button>
                     </div>
 
-                    <!-- 5. 이메일 회원가입 입력 폼 -->
+                    <!-- 6. 이메일 회원가입 입력 폼 -->
                     <div id="email-signup-form" class="btn-group hidden-group">
                         <form id="signup-real-form" class="signup-form-container">
                             <div class="input-group-row">
@@ -83,23 +109,40 @@
                                 <button type="button" id="check-email-btn" class="btn-check">중복확인</button>
                             </div>
                             <div id="email-check-msg" class="validation-msg"></div>
+
                             <input type="text" id="signup-username" name="username" placeholder="닉네임 (이름)" class="login-input" required>
                             <input type="password" id="signup-pw" name="password" placeholder="비밀번호" class="login-input" required>
                             <input type="password" id="signup-pw-confirm" name="passwordConfirm" placeholder="비밀번호 확인" class="login-input" required>
                             <div id="pw-check-msg" class="validation-msg"></div>
-                            <button type="submit" class="login-btn btn-normal-full" style="margin-top: 10px;">가입하기</button>
+
+                            <button type="submit" class="login-btn btn-normal-full" style="margin-top: 10px;">
+                                가입하기
+                            </button>
                         </form>
-                        <button type="button" id="back-to-signup-options-btn" class="login-btn btn-cancel">취소</button>
+                        <button type="button" id="back-to-signup-options-btn" class="login-btn btn-cancel">
+                            취소
+                        </button>
                     </div>
                 </div>
             </div>
-            <!-- 토스트 마크업은 삭제 (main.js가 userBaseLayout 등의 공통 토스트 사용) -->
+
+            <!-- 실패 메시지용 토스트 컨테이너 (성공 토스트는 main에서 처리) -->
+            <div id="custom-toast" class="toast-hidden">
+                <div class="toast-body">
+                    <i class="fa-solid fa-check-circle toast-icon"></i>
+                    <span id="toast-text">메시지 내용</span>
+                </div>
+            </div>
         </div>
+
+        <!-- main.js 로드 (showToast 함수 사용) -->
+        <script src="/js/main.js"></script>
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const loginPageWrapper = document.querySelector('.login-page-wrapper');
 
+                // 요소 선택
                 const loginOptionsGroup = document.getElementById('login-options-group');
                 const socialLoginGroup = document.getElementById('social-login-group');
                 const emailLoginFormDiv = document.getElementById('email-login-form');
@@ -111,13 +154,11 @@
                 const backToLoginBtn = document.getElementById('back-to-login-btn');
                 const emailLoginBtn = document.getElementById('email-login-btn');
                 const backToLoginOptionsBtn = document.getElementById('back-to-login-options-btn');
-
                 const showSignupOptionsBtn = document.getElementById('show-signup-options-btn');
                 const backToMainBtn = document.getElementById('back-to-main-btn');
                 const emailSignupBtn = document.getElementById('email-signup-btn');
                 const backToSignupOptionsBtn = document.getElementById('back-to-signup-options-btn');
 
-                const loginRealForm = document.getElementById('login-real-form');
                 const signupForm = document.getElementById('signup-real-form');
                 const checkEmailBtn = document.getElementById('check-email-btn');
                 const emailInput = document.getElementById('signup-email');
@@ -128,12 +169,6 @@
                 const pwCheckMsg = document.getElementById('pw-check-msg');
 
                 let isEmailChecked = false;
-
-                // 초기 상태
-                socialLoginGroup.style.display = 'none';
-                emailLoginFormDiv.style.display = 'none';
-                socialSignupGroup.style.display = 'none';
-                emailSignupFormDiv.style.display = 'none';
 
                 // 화면 전환 함수
                 function switchGroup(hideElement, showElement) {
@@ -149,7 +184,7 @@
                     }, 300);
                 }
 
-                // --- UI 이벤트 리스너들 ---
+                // --- 이벤트 리스너 ---
                 showSocialLoginBtn.addEventListener('click', () => {
                     loginOptionsGroup.classList.add('fade-out');
                     signupInitialSection.classList.add('fade-out');
@@ -192,38 +227,6 @@
                 backToLoginOptionsBtn.addEventListener('click', () => {
                     switchGroup(emailLoginFormDiv, socialLoginGroup);
                     loginPageWrapper.classList.remove('signup-mode');
-                });
-
-                // ★★★ [핵심] 일반 로그인 처리 (성공 시 파라미터 달고 메인으로 이동) ★★★
-                loginRealForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const formData = new FormData(loginRealForm);
-                    const urlEncodedData = new URLSearchParams(formData).toString();
-
-                    fetch('/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: urlEncodedData
-                    })
-                        .then(response => {
-                            if (response.url.includes('error')) throw new Error("LOGIN_FAILED");
-                            if (response.ok) return response.json();
-                            throw new Error("LOGIN_FAILED");
-                        })
-                        .then(data => {
-                            const username = data.username || '회원';
-                            // [수정] 여기서 토스트 띄우지 않고, 파라미터와 함께 메인으로 이동
-                            const encodedName = encodeURIComponent(username);
-                            window.location.href = `/home/?loginSuccess=true&username=${encodedName}`;
-                        })
-                        .catch(error => {
-                            // 실패 토스트는 현재 페이지에서 띄움 (전역 showToast 활용)
-                            if (typeof showToast === 'function') {
-                                showToast("아이디 혹은 비밀번호가 틀렸습니다.", 'error');
-                            } else {
-                                alert("아이디 혹은 비밀번호가 틀렸습니다.");
-                            }
-                        });
                 });
 
                 showSignupOptionsBtn.addEventListener('click', () => {
@@ -282,6 +285,84 @@
                     isEmailChecked = false;
                 });
 
+                // ============================================================
+                // [핵심] 일반 로그인 처리
+                // ============================================================
+                loginRealForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const formData = new FormData(loginRealForm);
+                    const urlEncodedData = new URLSearchParams(formData).toString();
+
+                    fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: urlEncodedData
+                    })
+                        .then(async response => {
+                            const data = await response.json();
+                            if (!response.ok || data.error) {
+                                throw new Error(data.message || "LOGIN_FAILED");
+                            }
+                            return data;
+                        })
+                        .then(data => {
+                            const username = data.username || '회원';
+                            window.location.href = `/home/?loginSuccess=true&username=${encodeURIComponent(username)}`;
+                        })
+                        .catch(err => {
+                            showToast(err.message || "아이디 또는 비밀번호가 틀렸습니다.", "error");
+                        });
+                });
+
+                // 회원가입 처리
+                signupForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (!isEmailChecked) {
+                        if (typeof showToast === 'function') showToast("이메일 중복 확인을 해주세요.", 'error');
+                        else alert("이메일 중복 확인을 해주세요.");
+                        emailInput.focus(); return;
+                    }
+                    const pw = pwInput.value;
+                    const confirmPw = pwConfirmInput.value;
+                    if (pw !== confirmPw) {
+                        if (typeof showToast === 'function') showToast("비밀번호가 일치하지 않습니다.", 'error');
+                        else alert("비밀번호가 일치하지 않습니다.");
+                        pwConfirmInput.focus(); return;
+                    }
+
+                    const formData = {
+                        email: emailInput.value,
+                        username: usernameInput.value,
+                        password: pw,
+                        passwordCheck: confirmPw
+                    };
+
+                    fetch('/api/member/signup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    })
+                        .then(response => {
+                            if (response.ok) return response.json();
+                            return response.json().then(errData => { throw errData; });
+                        })
+                        .then(data => {
+                            if (typeof showToast === 'function') showToast("가입이 완료되었습니다! 로그인 해주세요.");
+                            setTimeout(() => window.location.reload(), 1500);
+                        })
+                        .catch(error => {
+                            let msg = "회원가입 중 오류가 발생했습니다.";
+                            if (error.field === 'email') msg = "이미 사용 중인 이메일입니다.";
+                            else if (error.field === 'id') msg = "이미 사용 중인 아이디입니다.";
+                            else if (error.field === 'passwordCheck') msg = "비밀번호 확인이 일치하지 않습니다.";
+
+                            if (typeof showToast === 'function') showToast(msg, 'error');
+                            else alert(msg);
+                        });
+                });
+
+                // 이메일 중복확인
                 checkEmailBtn.addEventListener('click', function() {
                     const email = emailInput.value.trim();
                     if (!email) {
@@ -327,52 +408,6 @@
                 }
                 pwInput.addEventListener('input', checkPasswordMatch);
                 pwConfirmInput.addEventListener('input', checkPasswordMatch);
-
-                // 회원가입 처리
-                signupForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    if (!isEmailChecked) {
-                        if (typeof showToast === 'function') showToast("이메일 중복 확인을 해주세요.", 'error');
-                        emailInput.focus(); return;
-                    }
-                    const pw = pwInput.value;
-                    const confirmPw = pwConfirmInput.value;
-                    if (pw !== confirmPw) {
-                        if (typeof showToast === 'function') showToast("비밀번호가 일치하지 않습니다.", 'error');
-                        pwConfirmInput.focus(); return;
-                    }
-
-                    const formData = {
-                        email: emailInput.value,
-                        username: usernameInput.value,
-                        password: pw,
-                        passwordCheck: confirmPw
-                    };
-
-                    fetch('/api/member/signup', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    })
-                        .then(response => {
-                            if (response.ok) return response.json();
-                            return response.json().then(errData => { throw errData; });
-                        })
-                        .then(data => {
-                            // 회원가입 성공 시 바로 토스트 보여주고 1.5초 뒤 로그인 화면 새로고침 (기존 유지)
-                            if (typeof showToast === 'function') showToast("가입이 완료되었습니다! 로그인 해주세요.");
-                            setTimeout(() => window.location.reload(), 1500);
-                        })
-                        .catch(error => {
-                            let msg = "회원가입 중 오류가 발생했습니다.";
-                            if (error.field === 'email') msg = "이미 사용 중인 이메일입니다.";
-                            else if (error.field === 'id') msg = "이미 사용 중인 아이디입니다.";
-                            else if (error.field === 'passwordCheck') msg = "비밀번호 확인이 일치하지 않습니다.";
-
-                            if (typeof showToast === 'function') showToast(msg, 'error');
-                            else alert(msg);
-                        });
-                });
             });
         </script>
     </div>

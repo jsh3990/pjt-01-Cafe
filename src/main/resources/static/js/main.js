@@ -317,6 +317,50 @@ function initSwipeToDelete(item) {
     }
 }
 
+const loginRealForm = document.getElementById('login-real-form');
+if (loginRealForm) {
+    loginRealForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(loginRealForm);
+        const urlEncodedData = new URLSearchParams(formData).toString();
+
+        fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: urlEncodedData
+        })
+            .then(async response => {
+                // 1. 성공 (200 OK)
+                if (response.ok) {
+                    return response.json();
+                }
+                // 2. 실패 (401 Unauthorized 등) - 서버가 보낸 JSON 에러 메시지 파싱
+                else {
+                    const errData = await response.json();
+                    // 서버가 보낸 message가 있으면 그걸 쓰고, 없으면 기본값
+                    throw new Error(errData.message || "LOGIN_FAILED");
+                }
+            })
+            .then(data => {
+                // 로그인 성공!
+                const username = data.username || '회원';
+                const encodedName = encodeURIComponent(username);
+                window.location.href = `/home/?loginSuccess=true&username=${encodedName}`;
+            })
+            .catch(error => {
+                // 실패 토스트 표시
+                console.error("Login Error:", error);
+                // 에러 메시지 내용 그대로 토스트 출력
+                if (typeof showToast === 'function') {
+                    showToast(error.message === "LOGIN_FAILED" ? "아이디 또는 비밀번호가 틀렸습니다." : error.message, 'error');
+                } else {
+                    alert(error.message);
+                }
+            });
+    });
+}
+
 /* ============================================================
    [필수] showToast 함수 (전역 함수)
 ============================================================ */

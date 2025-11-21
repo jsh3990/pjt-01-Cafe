@@ -23,7 +23,7 @@ public class FormLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final MemberMapper memberMapper;
     private final RememberMeServices rememberMeServices;
-    private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 변환기
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void onAuthenticationSuccess(
@@ -31,29 +31,25 @@ public class FormLoginSuccessHandler implements AuthenticationSuccessHandler {
             HttpServletResponse response,
             Authentication authentication) throws IOException {
 
-        // 1. Remember-Me 쿠키 생성 (로그인 유지 체크 시)
+        // 1. Remember-Me 쿠키 생성
         rememberMeServices.loginSuccess(request, response, authentication);
 
         String email = authentication.getName();
         MemberVO member = memberMapper.findByEmail(email);
 
-        // 2. 세션에 멤버 정보 저장
         if(member != null) {
             request.getSession().setAttribute("member", member);
         }
 
-        // 3. [중요] 리다이렉트 대신 JSON 응답 반환
-        // 클라이언트(JS)가 이 JSON을 받아서 토스트를 띄우고 페이지를 이동시킵니다.
-        response.setStatus(HttpServletResponse.SC_OK);
+        response.setStatus(HttpServletResponse.SC_OK); // 200 OK
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
         Map<String, Object> data = new HashMap<>();
         data.put("message", "로그인 성공");
-        // 사용자 이름을 담아서 보내면 JS가 "xxx님 환영합니다"를 띄울 수 있습니다.
         data.put("username", member != null ? member.getUsername() : "고객");
 
-        // JSON으로 변환하여 응답 본문에 작성
+        // JSON 데이터를 응답 본문에 씀
         objectMapper.writeValue(response.getWriter(), data);
     }
 }

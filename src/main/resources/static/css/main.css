@@ -727,18 +727,21 @@ main.container {
 
 /* 토스트 컨테이너 (화면 중앙 정렬) */
 #custom-toast {
-    position: fixed;
+    /* fixed -> absolute 로 변경하여 .wrap 내부에서 중앙 정렬 */
+    position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* 정확한 중앙 정렬 */
-    z-index: 9999; /* 다른 모든 요소보다 위에 표시 */
+    transform: translate(-50%, -50%);
+    z-index: 9999;
 
-    /* 기본적으로 투명하고 클릭 불가능하게 설정 */
     opacity: 0;
     pointer-events: none;
-
-    /* 부드러운 페이드 인/아웃 효과 */
     transition: opacity 0.5s ease;
+
+    /* 줄바꿈 방지 및 너비 설정 */
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 /* 토스트가 보일 때 적용되는 클래스 */
@@ -755,36 +758,23 @@ main.container {
 
 /* 토스트 본체 디자인 */
 .toast-body {
-    /* 배경: 아주 약간 투명한 흰색 */
     background-color: rgba(255, 255, 255, 0.95);
-
-    /* 글자색: 진한 갈색 (카페 테마) */
     color: #5A3E2B;
-
-    /* 여백 및 크기 */
-    padding: 25px 40px;
-    min-width: 280px;
-    max-width: 80%; /* 모바일 대응 */
-
-    /* 둥근 모서리 (직사각형 느낌 살림) */
+    padding: 20px 30px;
     border-radius: 12px;
-
-    /* 내용 정렬 */
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 12px;
-
-    /* 그림자 (입체감) */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-
-    /* 텍스트 스타일 */
-    font-size: 18px;
+    gap: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    font-size: 16px;
     font-weight: 700;
     text-align: center;
 
-    /* 줄바꿈 문자(\n)를 실제 줄바꿈으로 인식 */
+    /* 너무 넓어지지 않게 제한 */
+    max-width: 80%;
+    min-width: 200px;
+
     white-space: pre-line;
 }
 
