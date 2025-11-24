@@ -18,7 +18,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationProvider;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
-import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.oidc.authentication.OidcAuthorizationCodeAuthenticationProvider;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
@@ -39,7 +38,8 @@ public class SecurityConfig {
     private final AdminUserDetailsService adminUserDetailsService;
 
     private final OAuth2FailureHandler oAuth2FailureHandler;
-    private final FormLoginFailureHandler formLoginFailureHandler;
+    private final FormLoginFailureHandlerForAdmin formLoginFailureHandlerForAdmin;
+    private final FormLoginFailureHandlerForUser formLoginFailureHandlerForUser;
 
     private final MemberMapper memberMapper;
     private final AdminMapper adminMapper;
@@ -132,7 +132,7 @@ public class SecurityConfig {
                         .usernameParameter("id")
                         .passwordParameter("pw")
                         .defaultSuccessUrl("/admin/orders", false)
-                        .failureHandler(formLoginFailureHandler)
+                        .failureHandler(formLoginFailureHandlerForAdmin)
                 )
                 .logout(l -> l
                         .logoutUrl("/admin/logout")
@@ -180,7 +180,7 @@ public class SecurityConfig {
                         .loginPage("/home/login")
                         .loginProcessingUrl("/login")
                         .successHandler(new FormLoginSuccessHandler(memberMapper, memberRememberMe()))
-                        .failureHandler(formLoginFailureHandler)
+                        .failureHandler(formLoginFailureHandlerForUser)
                 )
 
                 .oauth2Login(o -> o

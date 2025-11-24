@@ -32,6 +32,11 @@ public class AdminController {
         this.adminService = adminService;
     }
 
+    @GetMapping({"", "/", "/index"})
+    public String adminRoot() {
+        return "redirect:/admin/orders";
+    }
+
     @GetMapping("/login")
     public String adminLogin(HttpSession session, Model model, Authentication auth) {
 

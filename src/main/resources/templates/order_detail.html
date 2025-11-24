@@ -5,7 +5,7 @@
     <div class="wrap">
         <input type="hidden" id="detailStoreName" th:value="${storeName}">
         <input type="hidden" id="detailMemberId"
-               th:value="${#authentication.name != 'anonymousUser' ? #authentication.name : 'guest'}">
+               th:value="${session.LOGIN_USER_ID}">
         <div class="coffee-img">
             <img th:src="@{'/upload/menuImg/' + ${menu.menuImg}}"
                  th:alt="${menu.menuName}"

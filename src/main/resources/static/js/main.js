@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const dailyNum = String(order.dailyOrderNum).padStart(4, "0");
 
             // 토스트 메시지 띄우기
-            showToast(`주문번호 ${dailyNum}\n${title} 이(가) 준비되었습니다!\n음식을 찾아가세요!`);
+            showToast(`주문번호 ${dailyNum}\n${title} 이(가) 준비되었어요!\n픽업대에서 메뉴를 픽업해주세요!`);
 
             // 알림창 업데이트
             showAlarmDot();
@@ -131,8 +131,16 @@ document.addEventListener('DOMContentLoaded', () => {
             await loadUserOrders();
         });
 
+        es.addEventListener("order-cancel", (event) => {
+            const order = JSON.parse(event.data);
+            const dailyNum = String(order.dailyOrderNum).padStart(4, "0");
+            showToast(`주문번호 ${dailyNum}\n고객님의 주문이 취소되었습니다.`);
+            showAlarmDot();
+        });
+
         return es;
     }
+
 
     function initUserSSE() {
         if (typeof IS_LOGGED_IN === 'undefined' || !IS_LOGGED_IN) return;

@@ -1,6 +1,5 @@
 @charset "UTF-8";
 
-/* ... (기존 상단 코드 동일) ... */
 @keyframes fadeInDown {
     0% { opacity: 0; transform: translateY(-30px); }
     100% { opacity: 1; transform: translateY(0); }
@@ -120,6 +119,7 @@
     position: relative; overflow: hidden; padding: 0;
 }
 .login-btn:active { opacity: 0.8; }
+
 .social-icon-inside-btn { width: 24px; height: 24px; object-fit: contain; }
 
 .btn-kakao-full { background-color: #FEE500; color: #391B1B; font-size: 16px; font-weight: 600; gap: 10px; }
@@ -140,8 +140,8 @@
 .fixed-top, .fixed-bottom { display: none !important; }
 
 /* 회원가입/로그인 폼 스타일 */
-.signup-form-container { width: 100%; display: flex; flex-direction: column; gap: 8px; }
-.input-group-row { display: flex; gap: 8px; width: 100%; }
+.signup-form-container { width: 100%; display: flex; flex-direction: column; gap: 12px !important; }
+.input-group-row { display: flex; gap: 4px !important; width: 100%; margin-bottom: 0px !important; }
 .input-group-row .login-input { flex-grow: 1; }
 
 .btn-check {
@@ -157,7 +157,7 @@
 
 .validation-msg {
     font-size: 13px; font-weight: 500;
-    margin-top: -4px; margin-bottom: 4px; padding-left: 5px; min-height: 0;
+    margin-top: 0 !important; margin-bottom: 0 !important; padding-left: 5px; min-height: 0;
 }
 .text-danger { color: #ff6b6b; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
 .text-success { color: #51cf66; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
@@ -205,4 +205,25 @@
 .remember-me-container label {
     color: rgba(255, 255, 255, 0.9); font-size: 15px;
     cursor: pointer; user-select: none;
+}
+
+.login-error-box,
+.login-error-box span {
+    color: #ff4d4f; !important;
+    text-shadow: 0 0 4px rgba(0,0,0,0.35); !important;
+    font-weight: 700; !important;
+}
+
+#email-check-msg {
+    margin: 0;
+    padding: 0 5px;
+    display: none;
+}
+
+/* 텍스트 있을 때만 보이게 설정 */
+#email-check-msg.show {
+    display: block;
+    margin-top: -6px;
+    margin-bottom: -4px;
+    font-size: 13px;
 }
