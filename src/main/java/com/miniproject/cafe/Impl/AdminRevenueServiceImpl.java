@@ -11,22 +11,22 @@ import java.util.List;
 
 @Service
 public class AdminRevenueServiceImpl implements AdminRevenueService {
+
     @Autowired
     private AdminRevenueMapper adminRevenueMapper;
 
     @Override
-    public List<AdminRevenueVO> getAllOrders() {
-        return adminRevenueMapper.getAllOrders();
+    public List<AdminRevenueVO> getOrdersByDate(String date, String store) {
+        return adminRevenueMapper.getOrdersByDate(date, store);
     }
 
     @Override
-    public List<AdminRevenueVO> getOrdersByDate(String date) {
-        return adminRevenueMapper.getOrdersByDate(date);
+    public List<AdminRevenueVO> getAllOrders(String store) {
+        return adminRevenueMapper.getAllOrders(store);
     }
 
     @Override
-    public List<AdminRevenueVO> getOrdersByRange(String startDate, String endDate) {
-        return adminRevenueMapper.getOrdersByRange(startDate, endDate);
+    public List<AdminRevenueVO> getOrdersByRange(String startDate, String endDate, String store) {
+        return adminRevenueMapper.getOrdersByRange(startDate, endDate, store);
     }
-
 }

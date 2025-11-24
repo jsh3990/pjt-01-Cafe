@@ -4,45 +4,66 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.miniproject.cafe.Mapper.AdminRevenueMapper">
+
+    <!-- 단일 날짜 조회 -->
     <select id="getOrdersByDate" resultType="com.miniproject.cafe.VO.AdminRevenueVO">
         SELECT
-            DATE_FORMAT(order_time, '%Y-%m-%d') AS viewDate,
-            DATE_FORMAT(order_time, '%H:%i:%s') AS orderTime,
-            order_id AS orderId,
-            total_price AS orderAmount,
-            pickup_method AS orderType
+        DATE_FORMAT(order_time, '%Y-%m-%d') AS viewDate,
+        DATE_FORMAT(order_time, '%H:%i:%s') AS orderTime,
+        order_id AS orderId,
+        total_price AS orderAmount,
+        pickup_method AS orderType
         FROM orders
         WHERE DATE(order_time) = #{date}
-          AND order_status = '주문완료'
+        AND order_status = '주문완료'
+
+        <!-- 지점 필터 -->
+        <if test="store != null and store != ''">
+            AND store_name = #{store}
+        </if>
+
         ORDER BY order_time ASC
     </select>
 
+
+    <!-- 기간 조회 -->
     <select id="getOrdersByRange" resultType="com.miniproject.cafe.VO.AdminRevenueVO">
         SELECT
-            DATE_FORMAT(order_time, '%Y-%m-%d') AS viewDate,
-            DATE_FORMAT(order_time, '%H:%i:%s') AS orderTime,
-            order_id AS orderId,
-            total_price AS orderAmount,
-            pickup_method AS orderType
+        DATE_FORMAT(order_time, '%Y-%m-%d') AS viewDate,
+        DATE_FORMAT(order_time, '%H:%i:%s') AS orderTime,
+        order_id AS orderId,
+        total_price AS orderAmount,
+        pickup_method AS orderType
         FROM orders
         WHERE DATE(order_time) BETWEEN #{startDate} AND #{endDate}
-          AND order_status = '주문완료'
+        AND order_status = '주문완료'
+
+        <!-- 지점 필터 -->
+        <if test="store != null and store != ''">
+            AND store_name = #{store}
+        </if>
+
         ORDER BY order_time ASC
     </select>
 
+
+    <!-- 전체 조회 -->
     <select id="getAllOrders" resultType="com.miniproject.cafe.VO.AdminRevenueVO">
         SELECT
-            DATE_FORMAT(order_time, '%Y-%m-%d') AS viewDate,
-            DATE_FORMAT(order_time, '%H:%i:%s') AS orderTime,
-            order_id AS orderId,
-            total_price AS orderAmount,
-            pickup_method AS orderType
+        DATE_FORMAT(order_time, '%Y-%m-%d') AS viewDate,
+        DATE_FORMAT(order_time, '%H:%i:%s') AS orderTime,
+        order_id AS orderId,
+        total_price AS orderAmount,
+        pickup_method AS orderType
         FROM orders
         WHERE order_status = '주문완료'
+
+        <!-- 지점 필터 -->
+        <if test="store != null and store != ''">
+            AND store_name = #{store}
+        </if>
+
         ORDER BY order_time ASC
     </select>
-
-
-
 
 </mapper>

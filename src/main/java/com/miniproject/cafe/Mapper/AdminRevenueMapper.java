@@ -8,9 +8,13 @@ import java.util.List;
 
 @Mapper
 public interface AdminRevenueMapper {
-    List<AdminRevenueVO> getAllOrders();
-    List<AdminRevenueVO> getOrdersByDate(String date);
-    List<AdminRevenueVO> getOrdersByRange(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
+    List<AdminRevenueVO> getOrdersByDate(@Param("date") String date,
+                                         @Param("store") String store);
 
+    List<AdminRevenueVO> getOrdersByRange(@Param("startDate") String startDate,
+                                          @Param("endDate") String endDate,
+                                          @Param("store") String store);
+
+    List<AdminRevenueVO> getAllOrders(@Param("store") String store);
 }
