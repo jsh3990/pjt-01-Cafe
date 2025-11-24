@@ -37,4 +37,10 @@
     <select id="findById" parameterType="String" resultType="AdminVO">
         SELECT * FROM ADMIN WHERE id = #{id}
     </select>
+
+    <select id="getStoreList" resultType="String">
+        SELECT DISTINCT STORE_NAME
+        FROM ADMIN
+        ORDER BY STORE_NAME
+    </select>
 </mapper>
