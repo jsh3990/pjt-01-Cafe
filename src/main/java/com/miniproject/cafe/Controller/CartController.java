@@ -1,7 +1,9 @@
 package com.miniproject.cafe.Controller;
 
 import com.miniproject.cafe.Service.CartService;
+import com.miniproject.cafe.Service.CouponService;
 import com.miniproject.cafe.VO.CartItemVO;
+import com.miniproject.cafe.VO.CouponVO;
 import com.miniproject.cafe.VO.MemberVO;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +26,15 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
+    @Autowired
+    private CouponService couponService;
+
+    // HomeController와 동일한 로그인 체크 메서드
     // Security 인증 객체로 로그인 여부 체크 (뷰 접근 제어용)
     private boolean isLoggedIn(Authentication auth) {
         return auth != null && auth.isAuthenticated();
     }
 
-    // ✅ 실제 비즈니스 로직(장바구니)에 사용할 memberId는 세션에서 획득
     private String getMemberId(HttpSession session) {
         Object id = session.getAttribute("LOGIN_USER_ID");
         return (id != null) ? id.toString() : null;
@@ -44,7 +50,7 @@ public class CartController {
             return "redirect:/home/";
         }
 
-        // ✅ 세션에서 memberId 가져오기 (member PK)
+        // 세션에서 memberId 가져오기 (member PK)
         String memberId = getMemberId(session);
         if (memberId == null) {
             // 세션에 memberId 없으면 강제로 로그아웃 처리 후 홈으로 보내도 됨
@@ -85,6 +91,18 @@ public class CartController {
             cartData.put("totalPrice", 0);
         }
 
+        List<CouponVO> coupons = couponService.getCouponsByUser(memberId);
+        model.addAttribute("coupons", coupons);
+
+        if (coupons != null && !coupons.isEmpty()) {
+            LocalDate earliest = coupons.stream()
+                    .map(CouponVO::getExpireDate)
+                    .min(LocalDate::compareTo)
+                    .orElse(null);
+
+            model.addAttribute("earliestExpireDate", earliest);
+        }
+
         model.addAttribute("cartItems", cartData.get("cartItems"));
         model.addAttribute("totalPrice", cartData.get("totalPrice"));
         model.addAttribute("memberId", memberId);
@@ -95,7 +113,6 @@ public class CartController {
     @GetMapping("/cart/list/{memberId}")
     @ResponseBody
     public Map<String, Object> getCartList(@PathVariable String memberId) {
-        // 이 API는 기존대로 memberId를 직접 받음 (필요 시 세션 기반으로 변경 가능)
         return cartService.getCartList(memberId);
     }
 
@@ -144,7 +161,7 @@ public class CartController {
             return result;
         }
 
-        // ✅ 2차: 세션에 memberId(LOGIN_USER_ID)가 있는지 확인
+        // 2차: 세션에 memberId(LOGIN_USER_ID)가 있는지 확인
         String memberId = getMemberId(session);
         if (memberId == null) {
             result.put("success", false);

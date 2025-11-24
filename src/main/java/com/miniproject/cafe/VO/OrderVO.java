@@ -40,4 +40,6 @@ public class OrderVO {
     private Integer dailyOrderNum;
 
     private String requestText;
+
+    private List<Integer> couponIds;
 }

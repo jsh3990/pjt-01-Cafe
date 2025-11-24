@@ -37,7 +37,8 @@
                              th:data-base-price="${item['MENU_PRICE']}"
                              th:data-option-price="${(item['SHOT_COUNT'] + item['VANILLA_SYRUP_COUNT'] + item['WHIPPED_CREAM_COUNT']) * 500}"
                              th:data-quantity="${item['QUANTITY']}"
-                             th:data-option-id="${item['OPTION_ID']}">
+                             th:data-option-id="${item['OPTION_ID']}"
+                             th:data-category="${item['CATEGORY']}">
 
                             <label class="checkbox-container">
                                 <input type="checkbox" class="item-checkbox-input" checked>
@@ -79,7 +80,7 @@
                                     <span th:if="${item['VANILLA_SYRUP_COUNT'] > 0}">
                                         바닐라 시럽([[${item['VANILLA_SYRUP_COUNT']}]])(+[[${item['VANILLA_SYRUP_COUNT'] * 500}]]원)
                                         <span th:if="${item['WHIPPED_CREAM_COUNT'] > 0}"> | </span>
-                                </span>
+                                    </span>
 
                                     <span th:if="${item['WHIPPED_CREAM_COUNT'] > 0}">
                                         휘핑크림([[${item['WHIPPED_CREAM_COUNT']}]])(+[[${item['WHIPPED_CREAM_COUNT'] * 500}]]원)
@@ -143,6 +144,39 @@
                             </div>
                         </div>
                         <textarea id="directRequest" placeholder="직접입력 선택 시 상세 내용을 적어주세요." rows="4"></textarea>
+                    </div>
+
+                    <div class="section-container coupon-section">
+                        <div class="section-title" id="couponToggleBtn">쿠폰 사용 ▼</div>
+
+                        <div class="coupon-list" id="couponList" style="display: none;">
+                            <th:block th:each="c : ${coupons}">
+                                <label class="checkbox-container coupon-item">
+                                    <input type="checkbox" name="couponIds" th:value="${c.couponId}">
+                                    <span class="checkmark item-checkbox square"></span>
+
+                                    <span class="coupon-text">
+                                    <span th:text="${c.couponName}"></span>
+                                    <span class="expire-label">
+                                        (유효기간:
+                                        <span class="expire-date"
+                                              th:text="${#temporals.format(c.expireDate, 'yyyy.MM.dd')}"
+                                              th:classappend="${c.expireDate == earliestExpireDate} ? ' highlight-expire'">
+                                        </span>
+                                        )
+                                    </span>
+                                </span>
+
+                                </label>
+                            </th:block>
+                        </div>
+
+
+                        <div id="couponApplyResult" style="display:none; margin-top:10px; padding:10px; border:1px solid #ccc; border-radius:8px;">
+                            <div id="couponSummaryText" style="font-weight:bold;"></div>
+                            <ul id="couponAppliedItems" style="margin-top:8px; padding-left:18px;"></ul>
+                            <div id="couponDiscountTotal" style="margin-top:10px; font-weight:bold;"></div>
+                        </div>
                     </div>
 
                     <div class="section-container payment-section">

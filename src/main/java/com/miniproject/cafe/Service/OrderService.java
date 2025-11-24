@@ -15,4 +15,6 @@ public interface OrderService {
     List<RecentOrderVO> getAllOrders(String memberId);
 
     OrderVO getOrderById(Long orderId);
+
+    void useCoupons(List<Integer> couponIds);
 }

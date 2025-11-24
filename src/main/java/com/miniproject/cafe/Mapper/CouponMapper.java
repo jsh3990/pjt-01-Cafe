@@ -17,4 +17,6 @@ public interface CouponMapper {
 
     // 사용 처리
     void markUsed(@Param("couponId") int couponId);
+
+    void markUsedMultiple(@Param("ids") List<Integer> ids);
 }

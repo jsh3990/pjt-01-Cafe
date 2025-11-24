@@ -516,3 +516,14 @@ body {
         min-height: 100vh;
     }
 }
+
+.coupon-list {
+    overflow: hidden;
+    transition: height 0.3s ease;
+}
+
+.highlight-expire {
+    color: #ff4d4d;
+    font-weight: bold;
+}
+

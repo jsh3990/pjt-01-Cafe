@@ -31,8 +31,12 @@
                     <div class="coupon-right">
                         <p class="coupon-brand">JavaBean</p>
                         <p class="coupon-name" th:text="${c.couponName}"></p>
-                        <p class="coupon-expire"
-                           th:text="'유효기간 : ' + ${#temporals.format(c.expireDate, 'yyyy.MM.dd')}"></p>
+                        <p class="coupon-expire">
+                            유효기간 :
+                            <span class="expire-date"
+                                  th:text="${#temporals.format(c.expireDate, 'yyyy.MM.dd')}"
+                                  th:classappend="${c.expireDate == earliestExpireDate} ? ' highlight-expire'"></span>
+                        </p>
                     </div>
 
                 </div>

@@ -1,6 +1,8 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
-    // 1. 초기 설정
+    /* ---------------------------------------
+       1. 기본 설정
+    --------------------------------------- */
     let mainElement = document.querySelector('.shopping-cart-combined');
     let currentUserId = mainElement ? mainElement.getAttribute('data-member-id') : null;
 
@@ -8,58 +10,53 @@ document.addEventListener('DOMContentLoaded', function() {
     let isProcessingPayment = false;
     let API_BASE_URL = '/home/cart';
 
-    // ==========================================
-    // 2. "메뉴 보러가기" 버튼 지점 선택 체크
-    // ==========================================
 
-    let goToMenuBtn = document.querySelector('.go-to-menu-btn');
+    /* ---------------------------------------
+       2. 메뉴 보러가기 버튼
+    --------------------------------------- */
+    const goToMenuBtn = document.querySelector('.go-to-menu-btn');
 
     if (goToMenuBtn) {
-        goToMenuBtn.addEventListener('click', async function(e) {
+        goToMenuBtn.addEventListener('click', async function (e) {
             e.preventDefault();
 
             try {
-                let resp = await fetch("/home/getRegion");
-                let storeName = await resp.text();
+                const resp = await fetch("/home/getRegion");
+                const storeName = await resp.text();
 
                 if (!storeName || storeName === "null" || storeName.trim() === "") {
                     alert("주문할 매장을 먼저 선택해주세요.");
                     window.location.href = '/home/';
                 } else {
-                    // 지점 선택되었으면 정상적으로 메뉴 페이지로 이동
                     window.location.href = '/menu/coffee';
                 }
             } catch (error) {
-                console.error("매장 확인 중 오류:", error);
                 alert("매장 정보를 확인하는 중 오류가 발생했습니다.");
                 window.location.href = '/home/';
             }
         });
     }
 
-    // ==========================================
-    // 2. 장바구니 API 통신 함수 (수량변경, 삭제)
-    // ==========================================
 
-    // 수량 변경 API 호출
+    /* ---------------------------------------
+       3. Cart API
+    --------------------------------------- */
     function changeQuantityCartItem(cartItemId, quantity) {
         return fetch(`${API_BASE_URL}/items/${cartItemId}?quantity=${quantity}`, {
             method: 'PATCH'
-        }).then(response => response.text());
+        }).then(r => r.text());
     }
 
-    // 삭제 API 호출
     function deleteCartItem(cartItemId) {
         return fetch(`${API_BASE_URL}/items/${cartItemId}`, {
             method: 'DELETE'
-        }).then(response => response.text());
+        }).then(r => r.text());
     }
 
-    // ==========================================
-    // 3. 화면 업데이트 & 가격 계산 로직
-    // ==========================================
 
-    // 개별 아이템 가격 표시 업데이트
+    /* ---------------------------------------
+       4. 개별 아이템 가격 표시
+    --------------------------------------- */
     function updateItemPriceDisplay(itemElement) {
         let basePrice = parseInt(itemElement.dataset.basePrice) || 0;
         let optionPrice = parseInt(itemElement.dataset.optionPrice) || 0;
@@ -73,27 +70,60 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ==========================================
-    // 직접입력 체크박스 활성/비활성 제어
-    // ==========================================
 
+    /* ---------------------------------------
+       5. 쿠폰 할인 계산
+    --------------------------------------- */
+    function calculateCouponDiscount() {
+        let selectedCoupons = document.querySelectorAll("input[name='couponIds']:checked").length;
+        if (selectedCoupons === 0) return 0;
+
+        let drinkItems = [];
+
+        document.querySelectorAll('.cart-item').forEach(item => {
+            let isChecked = item.querySelector('.item-checkbox-input').checked;
+            if (!isChecked) return;
+
+            if (item.dataset.category === '푸드') return;
+
+            let price = parseInt(item.dataset.basePrice);
+            let qty = parseInt(item.querySelector('.item-quantity').dataset.quantity);
+
+            for (let i = 0; i < qty; i++) {
+                drinkItems.push(price);
+            }
+        });
+
+        if (drinkItems.length === 0) return 0;
+
+        drinkItems.sort((a, b) => b - a);
+
+        let discount = 0;
+        for (let i = 0; i < selectedCoupons && i < drinkItems.length; i++) {
+            discount += drinkItems[i];
+        }
+
+        return discount;
+    }
+
+
+    /* ---------------------------------------
+       6. 요청사항 직접입력
+    --------------------------------------- */
     let directInputCheck = document.getElementById('directInputCheck');
     let directRequest = document.getElementById('directRequest');
 
-    // 초기 상태: 비활성화
     if (directRequest) {
         directRequest.disabled = true;
-        directRequest.style.opacity = "0.5";  // 시각적으로 비활성화 느낌
+        directRequest.style.opacity = "0.5";
     }
 
     if (directInputCheck && directRequest) {
-        directInputCheck.addEventListener('change', function() {
+        directInputCheck.addEventListener('change', function () {
             if (this.checked) {
-                // 활성화
                 directRequest.disabled = false;
                 directRequest.style.opacity = "1";
             } else {
-                // 비활성화 + 내용 삭제
                 directRequest.disabled = true;
                 directRequest.value = "";
                 directRequest.style.opacity = "0.5";
@@ -101,64 +131,160 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 하단 주문 정보(총액, 배달비) 업데이트
+
+    /* ---------------------------------------
+       7. 가격 업데이트
+    --------------------------------------- */
     function updateOrderPrice(productTotal) {
-        // 상품 금액
-        let productPriceElement = document.getElementById('productPrice');
-        if (productPriceElement) productPriceElement.textContent = `${productTotal.toLocaleString('ko-KR')}원`;
+        let discount = calculateCouponDiscount();
 
-        let summaryTotalElement = document.getElementById('summaryTotalPrice');
-        if (summaryTotalElement) summaryTotalElement.textContent = `${productTotal.toLocaleString('ko-KR')}원`;
+        document.getElementById('productPrice').textContent =
+            `${productTotal.toLocaleString('ko-KR')}원`;
 
-        // 배달비 계산
-        let currentDeliveryFee = 0;
-        let deliveryButton = document.querySelector('.delivery-btn.active-delivery');
-        if (deliveryButton && deliveryButton.dataset.type === 'delivery') {
-            currentDeliveryFee = fixedDeliveryFee;
-        }
-        // 포장과 매장은 배달비 0원
-
-        let deliveryFeeElement = document.getElementById('deliveryFee');
-        if (deliveryFeeElement) {
-            deliveryFeeElement.textContent = currentDeliveryFee > 0 ? `${currentDeliveryFee.toLocaleString('ko-KR')}원` : '0원';
+        let deliveryFee = 0;
+        let deliveryBtn = document.querySelector('.delivery-btn.active-delivery');
+        if (deliveryBtn && deliveryBtn.dataset.type === 'delivery') {
+            deliveryFee = fixedDeliveryFee;
         }
 
-        // 최종 결제 금액
-        let finalTotal = productTotal + currentDeliveryFee;
-        let finalTotalElement = document.getElementById('finalTotalPrice');
-        if (finalTotalElement) finalTotalElement.textContent = `${finalTotal.toLocaleString('ko-KR')}원`;
+        document.getElementById('deliveryFee').textContent =
+            deliveryFee === 0 ? '0원' : `${deliveryFee.toLocaleString('ko-KR')}원`;
+
+        let final = productTotal - discount + deliveryFee;
+        if (final < 0) final = 0;
+
+        document.getElementById('finalTotalPrice').textContent =
+            `${final.toLocaleString('ko-KR')}원`;
     }
 
-    // 전체 장바구니 합계 재계산
+
+    /* ---------------------------------------
+       8. 장바구니 합계
+    --------------------------------------- */
     function updateCartTotal() {
         let total = 0;
-        let items = document.querySelectorAll('.cart-item');
 
-        items.forEach(function(item) {
-            // 체크된 항목만 합계에 포함
-            let isChecked = item.querySelector('.item-checkbox-input').checked;
-            if (isChecked) {
-                let basePrice = parseInt(item.dataset.basePrice) || 0;
-                let optionPrice = parseInt(item.dataset.optionPrice) || 0;
-                let quantity = parseInt(item.querySelector('.item-quantity').dataset.quantity) || 0;
-                total += (basePrice + optionPrice) * quantity;
+        document.querySelectorAll('.cart-item').forEach(item => {
+            let checked = item.querySelector('.item-checkbox-input').checked;
+            if (!checked) return;
+
+            let basePrice = parseInt(item.dataset.basePrice) || 0;
+            let optionPrice = parseInt(item.dataset.optionPrice) || 0;
+            let qty = parseInt(item.querySelector('.item-quantity').dataset.quantity) || 0;
+
+            total += (basePrice + optionPrice) * qty;
+        });
+
+        document.getElementById('totalCartPrice').textContent =
+            `${total.toLocaleString('ko-KR')}원`;
+
+        updateOrderPrice(total);
+        updatePaymentButtonState();
+    }
+
+
+    /* ---------------------------------------
+       9. 쿠폰 UI 토글
+    --------------------------------------- */
+    const toggleBtn = document.getElementById("couponToggleBtn");
+    const couponList = document.getElementById("couponList");
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+            couponList.style.display =
+                couponList.style.display === "block" ? "none" : "block";
+        });
+    }
+
+
+    /* ---------------------------------------
+       10. 쿠폰 적용 결과 표시
+    --------------------------------------- */
+    const couponApplyResult = document.getElementById("couponApplyResult");
+    const couponSummaryText = document.getElementById("couponSummaryText");
+    const couponAppliedItems = document.getElementById("couponAppliedItems");
+    const couponDiscountTotal = document.getElementById("couponDiscountTotal");
+
+    document.addEventListener("change", function (e) {
+        if (e.target.name !== "couponIds") return;
+
+        const checked = document.querySelectorAll("input[name='couponIds']:checked");
+
+        if (checked.length === 0) {
+            couponApplyResult.style.display = "none";
+            updateCartTotal();
+            return;
+        }
+
+        couponApplyResult.style.display = "block";
+
+        let drinkList = [];
+        document.querySelectorAll(".cart-item").forEach(item => {
+            if (item.dataset.category === "푸드") return;
+
+            let qty = parseInt(item.querySelector('.item-quantity').dataset.quantity);
+            let name = item.querySelector('.item-name').textContent.trim();
+            let price = parseInt(item.dataset.basePrice);
+
+            for (let i = 0; i < qty; i++) {
+                drinkList.push({ name, price });
             }
         });
 
-        let formattedTotal = total.toLocaleString('ko-KR');
-        let cartTotalElement = document.getElementById('totalCartPrice');
-        if (cartTotalElement) cartTotalElement.textContent = `${formattedTotal}원`;
+        drinkList.sort((a, b) => b.price - a.price);
 
-        updateOrderPrice(total);
-        updatePaymentButtonState(); // 버튼 활성화 여부 체크
+        let html = "";
+        let discount = 0;
+
+        checked.forEach((c, idx) => {
+            if (!drinkList[idx]) return;
+
+            html += `<li>${drinkList[idx].name} - 할인 적용: ${drinkList[idx].price.toLocaleString("ko-KR")}원</li>`;
+            discount += drinkList[idx].price;
+        });
+
+        couponSummaryText.textContent = `적용 쿠폰: ${checked.length}개`;
+        couponAppliedItems.innerHTML = html;
+        couponDiscountTotal.textContent =
+            `총 할인 금액: ${discount.toLocaleString("ko-KR")}원`;
+
+        updateCartTotal();
+        limitCouponSelection();
+    });
+
+
+    /* ---------------------------------------
+       11. 쿠폰 개수 제한 (음료 총 수량 기준)
+    --------------------------------------- */
+    function limitCouponSelection() {
+        const couponCheckboxes = document.querySelectorAll("input[name='couponIds']");
+        const checked = document.querySelectorAll("input[name='couponIds']:checked");
+
+        let drinkCount = 0;
+
+        document.querySelectorAll('.cart-item').forEach(item => {
+            if (item.dataset.category !== "푸드") {
+                let qty = parseInt(item.querySelector('.item-quantity').dataset.quantity) || 0;
+                drinkCount += qty;
+            }
+        });
+
+        if (checked.length >= drinkCount) {
+            couponCheckboxes.forEach(cb => {
+                if (!cb.checked) cb.disabled = true;
+            });
+        } else {
+            couponCheckboxes.forEach(cb => cb.disabled = false);
+        }
     }
 
-    // ==========================================
-    // 4. 이벤트 리스너 (클릭, 수량조절, 삭제)
-    // ==========================================
+
+    /* ---------------------------------------
+       12. 장바구니 항목 이벤트 (수량 +/-, 삭제, 개별 체크)
+    --------------------------------------- */
     let cartContainer = document.querySelector('.item-list');
     if (cartContainer) {
-        cartContainer.addEventListener('click', function(e) {
+        cartContainer.addEventListener('click', function (e) {
             let btn = e.target;
             let item = btn.closest('.cart-item');
             if (!item) return;
@@ -189,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
             }
-            // 삭제 버튼 (x)
+            // 삭제 버튼
             else if (btn.classList.contains('item-remove')) {
                 let cartItemId = item.dataset.cartItemId;
                 if (cartItemId) {
@@ -210,32 +336,46 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 전체 선택 체크박스
+
+    /* ---------------------------------------
+       13. 전체 선택 체크박스
+    --------------------------------------- */
     let selectAllCheckbox = document.getElementById('selectAll');
     if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
+        selectAllCheckbox.addEventListener('change', function () {
             let itemCheckboxes = document.querySelectorAll('.item-checkbox-input');
             itemCheckboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
             updateCartTotal();
         });
     }
 
-    // 배달/포장/매장 토글 버튼
+
+    /* ---------------------------------------
+       14. 배달/포장/매장 토글 버튼 (포장 버튼 포함)
+    --------------------------------------- */
     let deliveryToggle = document.querySelector('.delivery-toggle');
     if (deliveryToggle) {
-        deliveryToggle.addEventListener('click', function(e) {
-            if (e.target.classList.contains('delivery-btn')) {
-                deliveryToggle.querySelectorAll('.delivery-btn').forEach(btn => btn.classList.remove('active-delivery'));
-                e.target.classList.add('active-delivery');
-                updateCartTotal();
-            }
+        deliveryToggle.addEventListener('click', function (e) {
+            // span 등 내부 클릭해도 버튼을 찾도록 closest 사용
+            let btn = e.target.closest('.delivery-btn');
+            if (!btn) return;
+
+            deliveryToggle.querySelectorAll('.delivery-btn')
+                .forEach(b => b.classList.remove('active-delivery'));
+
+            btn.classList.add('active-delivery');
+
+            updateCartTotal();
         });
     }
 
-    // 선택 삭제 버튼
+
+    /* ---------------------------------------
+       15. 선택 삭제 버튼
+    --------------------------------------- */
     let deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
     if (deleteSelectedBtn) {
-        deleteSelectedBtn.addEventListener('click', function() {
+        deleteSelectedBtn.addEventListener('click', function () {
             let checkedItems = document.querySelectorAll('.cart-item .item-checkbox-input:checked');
             if (checkedItems.length === 0) {
                 alert('삭제할 항목을 선택해주세요.');
@@ -245,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!confirm(`선택된 ${checkedItems.length}개 항목을 삭제하시겠습니까?`)) return;
 
             let deletePromises = [];
-            checkedItems.forEach(function(checkbox) {
+            checkedItems.forEach(function (checkbox) {
                 let cartItem = checkbox.closest('.cart-item');
                 let cartItemId = cartItem.dataset.cartItemId;
                 if (cartItemId) deletePromises.push(deleteCartItem(cartItemId));
@@ -255,201 +395,158 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    //요청사항
+
+    /* ---------------------------------------
+       16. 요청사항 문자열 생성
+    --------------------------------------- */
     function getRequestText() {
-        let items = [];
+        let arr = [];
 
-        // 체크박스(예: "빨대 빼주세요", "얼음 적게") 값 읽기
         document.querySelectorAll('input[name="requestOption"]:checked')
-            .forEach(el => items.push(el.value));
+            .forEach(el => arr.push(el.value));
 
-        // 직접입력 textarea 값 읽기
-        let directInput = document.getElementById('directRequest');
-        if (directInput && directInput.value.trim() !== "") {
-            items.push(directInput.value.trim());
+        if (directRequest && directRequest.value.trim() !== "") {
+            arr.push(directRequest.value.trim());
         }
 
-        // 아무 옵션도 선택 안 했으면 '없음'
-        return items.length > 0 ? items.join(", ") : "없음";
+        return arr.length === 0 ? "없음" : arr.join(", ");
     }
 
-    // ==========================================
-    // 5. ⭐ [핵심] 주문 데이터 생성 (OrderVO 구조 맞춤) - 수정된 부분
-    // ==========================================
-    function preparePaymentData(selectedItems) {
-        let storeNameInput = document.getElementById('currentStoreName');
-        let storeName = storeNameInput ? storeNameInput.value : "";
 
-        let orderItems = [];
+    /* ---------------------------------------
+       17. 주문 데이터 생성
+    --------------------------------------- */
+    function preparePaymentData(selectedItems) {
+        let storeName = document.getElementById('currentStoreName')?.value ?? "";
+
+        let orderItemList = [];
         let totalQty = 0;
 
-        let requestText = getRequestText();
-
-        console.log("--------------------------------");
-        console.log("🛒 [JS 데이터 점검]");
-        console.log("1. 매장명(HTML hidden):", storeNameInput);
-        console.log("2. 매장명(Value):", storeName);
-        console.log("3. 주문자 ID:", currentUserId);
-        console.log("--------------------------------");
-
-        // 1. 체크된 장바구니 아이템들을 하나씩 순회하며 데이터 추출
-        selectedItems.forEach(function(checkbox) {
-            let item = checkbox.closest('.cart-item');
+        selectedItems.forEach(cb => {
+            let item = cb.closest('.cart-item');
             let qty = parseInt(item.querySelector('.item-quantity').dataset.quantity);
 
-            //옵션 ID
-            let optionId = parseInt(item.dataset.optionId);
-            console.log('[CHECK] cart item optionId =', optionId);
-
-            // 메뉴 ID
-            let menuId = item.dataset.menuId || item.dataset.cartItemId;
-
-            // 상세 옵션 정보
-            let shot = parseInt(item.dataset.shotCount || 0);
-            let vanillaSyrup = parseInt(item.dataset.vanillaSyrupCount || 0);
-            let whippedCream = parseInt(item.dataset.whippedCreamCount || 0);
-
-            // 온도 (ICE/HOT)
-            let tempElement = item.querySelector('.item-temp');
-            let tempText = tempElement ? tempElement.textContent.trim() : 'ICE';
-
-            // 텀블러 사용 여부
-            let optionsText = item.querySelector('.item-options') ? item.querySelector('.item-options').textContent : "";
-            let isTumbler = optionsText.includes('텀블러') ? 1 : 0;
-
-            // 리스트에 추가
-            orderItems.push({
-                menuId: menuId,
+            orderItemList.push({
+                menuId: item.dataset.menuId,
                 menuItemName: item.querySelector('.item-name').textContent.trim(),
                 quantity: qty,
-                optionId: optionId,
-                temp: tempText,
-                tumbler: isTumbler,
-                shot: shot,
-                vanillaSyrup: vanillaSyrup,
-                whippedCream: whippedCream
+                optionId: parseInt(item.dataset.optionId),
+                temp: item.querySelector('.item-temp')?.textContent.trim() ?? 'ICE',
+                tumbler: item.querySelector('.item-options')?.textContent.includes('텀블러') ? 1 : 0
             });
 
             totalQty += qty;
         });
 
-        // 2. 주문 유형 (배달/포장/매장) 확인
         let deliveryBtn = document.querySelector('.delivery-btn.active-delivery');
-        let pickupMethod = "포장"; // 기본값
+        let orderType = "포장";
 
         if (deliveryBtn) {
-            if (deliveryBtn.dataset.type === 'delivery') {
-                pickupMethod = "배달";
-            } else if (deliveryBtn.dataset.type === 'packaging') {
-                pickupMethod = "포장";
-            } else if (deliveryBtn.dataset.type === 'store') {
-                pickupMethod = "매장";
-            }
+            if (deliveryBtn.dataset.type === 'delivery') orderType = "배달";
+            else if (deliveryBtn.dataset.type === 'store') orderType = "매장";
+            else if (deliveryBtn.dataset.type === 'packaging') orderType = "포장";
         }
 
-        // 3. 총 결제 금액 (화면에 계산된 최종 금액에서 숫자만 추출)
-        let totalStr = document.getElementById('finalTotalPrice').textContent;
-        let finalPrice = parseInt(totalStr.replace(/[^0-9]/g, ''));
+        let finalStr = document.getElementById('finalTotalPrice').textContent;
+        let finalPrice = parseInt(finalStr.replace(/[^0-9]/g, ''));
 
-        // 5. 최종 데이터 반환 (OrderVO 구조)
+        let selectedCoupons =
+            Array.from(document.querySelectorAll("input[name='couponIds']:checked"))
+                .map(c => parseInt(c.value));
+
         return {
             totalQuantity: totalQty,
             totalPrice: finalPrice,
-            orderType: pickupMethod, // "배달", "포장", "매장" 중 하나
+            orderType: orderType,
             orderStatus: "주문접수",
-            uId: currentUserId || "guest",
+            uId: currentUserId,
             storeName: storeName,
-            orderItemList: orderItems,
-            requestText: requestText
+            orderItemList: orderItemList,
+            requestText: getRequestText(),
+            couponIds: selectedCoupons
         };
     }
 
-    // ==========================================
-    // 7. ⭐ [핵심] 결제 요청 (API 호출)
-    // ==========================================
+
+    /* ---------------------------------------
+       18. 결제 요청
+    --------------------------------------- */
     async function handlePayment() {
+
         if (isProcessingPayment) return;
 
-        let selectedItems = document.querySelectorAll('.cart-item .item-checkbox-input:checked');
+        let selectedItems =
+            document.querySelectorAll('.cart-item .item-checkbox-input:checked');
+
         if (selectedItems.length === 0) {
-            alert('결제할 상품을 선택해주세요.');
+            alert("결제할 상품을 선택해주세요.");
             return;
         }
 
         isProcessingPayment = true;
         setPaymentButtonLoading(true);
 
-        let paymentData = preparePaymentData(selectedItems);
+        let data = preparePaymentData(selectedItems);
 
         try {
-            // 1. 주문 생성 API 호출
-            let response = await fetch('/api/orders/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(paymentData)
+            let response = await fetch("/api/orders/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
             });
 
             if (!response.ok) {
-                let errorText = await response.text();
-                throw new Error('주문 실패: ' + errorText);
+                throw new Error(await response.text());
             }
 
-            // 2. ✅ 주문 성공 시 DB에서 선택된 장바구니 아이템들 삭제
             let deletePromises = [];
-            selectedItems.forEach(function(checkbox) {
-                let cartItem = checkbox.closest('.cart-item');
-                let cartItemId = cartItem.dataset.cartItemId;
-                if (cartItemId) {
-                    // 🔥 이 함수가 DB 테이블에서 row를 삭제하는 API 호출
-                    deletePromises.push(deleteCartItem(cartItemId));
-                }
+            selectedItems.forEach(cb => {
+                let cartItem = cb.closest('.cart-item');
+                deletePromises.push(deleteCartItem(cartItem.dataset.cartItemId));
             });
 
-            // 모든 삭제 API 호출이 완료될 때까지 대기
             await Promise.all(deletePromises);
 
-            console.log('✅ 주문 생성 및 장바구니 삭제 완료');
-            alert('주문이 완료되었습니다!');
+            alert("주문이 완료되었습니다!");
             window.location.href = "/home/";
 
-        } catch (error) {
-            console.error('주문 처리 중 오류:', error);
-            alert('주문 처리 중 오류가 발생했습니다: ' + error.message);
+        } catch (err) {
+            alert("주문 처리 오류: " + err.message);
         } finally {
-            setPaymentButtonLoading(false);
             isProcessingPayment = false;
+            setPaymentButtonLoading(false);
         }
     }
 
-    // 결제 버튼 UI 상태 관리
+
+    /* ---------------------------------------
+       19. 버튼 상태
+    --------------------------------------- */
     function setPaymentButtonLoading(isLoading) {
         let btn = document.querySelector('.payment-btn');
-        if (btn) {
-            if (isLoading) {
-                btn.disabled = true;
-                btn.textContent = '주문 처리 중...';
-            } else {
-                btn.disabled = false;
-                btn.textContent = '결제하기';
-            }
-        }
+        if (!btn) return;
+
+        btn.disabled = isLoading;
+        btn.textContent = isLoading ? "주문 처리 중..." : "결제하기";
     }
 
     function updatePaymentButtonState() {
         let btn = document.querySelector('.payment-btn');
-        let count = document.querySelectorAll('.cart-item .item-checkbox-input:checked').length;
-        if (btn) {
-            btn.disabled = count === 0;
-            btn.style.opacity = count === 0 ? '0.6' : '1';
-        }
+        let count =
+            document.querySelectorAll('.cart-item .item-checkbox-input:checked').length;
+
+        if (!btn) return;
+
+        btn.disabled = count === 0;
+        btn.style.opacity = count === 0 ? "0.6" : "1";
     }
 
-    // 결제 버튼 이벤트 연결
-    let paymentButton = document.querySelector('.payment-btn');
-    if (paymentButton) {
-        paymentButton.addEventListener('click', handlePayment);
-    }
 
-    // 페이지 로드 시 초기 계산 실행
+    /* ---------------------------------------
+       20. 이벤트 등록 & 초기 계산
+    --------------------------------------- */
+    document.querySelector('.payment-btn')
+        ?.addEventListener('click', handlePayment);
+
     updateCartTotal();
 });

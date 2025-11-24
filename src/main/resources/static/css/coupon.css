@@ -54,3 +54,8 @@
     margin-top: 6px;
     color: #666;
 }
+
+.highlight-expire {
+    color: #ff4d4d;
+    font-weight: bold;
+}
