@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* ---------------------------------------
-       11. 쿠폰 개수 제한 (음료 총 수량 기준)
+       11. 쿠폰 개수 제한 (🔥 수정됨)
     --------------------------------------- */
     function limitCouponSelection() {
         const couponCheckboxes = document.querySelectorAll("input[name='couponIds']");
@@ -279,13 +279,16 @@ document.addEventListener('DOMContentLoaded', function () {
         if (checked.length > drinkCount) {
             alert("음료 수량보다 많은 쿠폰을 선택할 수 없습니다.");
             checked[checked.length - 1].checked = false;
+            const evt = new Event("change", { bubbles: true });
+            checked[0].dispatchEvent(evt);
+
+            return;
         }
     }
 
 
-
     /* ---------------------------------------
-       12. 장바구니 항목 이벤트 (수량 +/-, 삭제, 개별 체크)
+       12. 장바구니 항목 이벤트
     --------------------------------------- */
     let cartContainer = document.querySelector('.item-list');
     if (cartContainer) {
@@ -294,7 +297,6 @@ document.addEventListener('DOMContentLoaded', function () {
             let item = btn.closest('.cart-item');
             if (!item) return;
 
-            // 수량 조절 (+ / -)
             if (btn.classList.contains('plus-btn') || btn.classList.contains('minus-btn')) {
                 let quantitySpan = item.querySelector('.item-quantity');
                 let currentQuantity = parseInt(quantitySpan.dataset.quantity);
@@ -320,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 }
             }
-            // 삭제 버튼
+
             else if (btn.classList.contains('item-remove')) {
                 let cartItemId = item.dataset.cartItemId;
                 if (cartItemId) {
@@ -334,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 }
             }
-            // 개별 체크박스
+
             else if (btn.classList.contains('item-checkbox-input')) {
                 updateCartTotal();
             }
@@ -356,12 +358,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* ---------------------------------------
-       14. 배달/포장/매장 토글 버튼 (포장 버튼 포함)
+       14. 배달/포장/매장 토글 버튼
     --------------------------------------- */
     let deliveryToggle = document.querySelector('.delivery-toggle');
     if (deliveryToggle) {
         deliveryToggle.addEventListener('click', function (e) {
-            // span 등 내부 클릭해도 버튼을 찾도록 closest 사용
             let btn = e.target.closest('.delivery-btn');
             if (!btn) return;
 
