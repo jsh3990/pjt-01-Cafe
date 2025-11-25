@@ -146,7 +146,7 @@ public class SecurityConfig {
                 )
                 .rememberMe(r -> r
                         .key("admin-secure-key")
-                        .rememberMeParameter("remember-me")
+                        .rememberMeParameter("remember-me-admin")
                         .tokenValiditySeconds(60 * 60 * 24 * 14)
                         .userDetailsService(adminUserDetailsService)
                         .rememberMeCookieName("remember-me-admin")

@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>관리자 로그인 - Java Cafe</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/admin.css">
-    <link rel="stylesheet" href="/css/admin_login.css">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/admin_login.css}">
 </head>
 <body>
 <header class="top-bar">
@@ -28,8 +28,8 @@
             </div>
 
             <div class="remember-me-wrapper">
-                <input type="checkbox" id="remember-me" name="remember-me">
-                <label for="remember-me">자동 로그인</label>
+                <input type="checkbox" id="remember-me-admin" name="remember-me-admin">
+                <label for="remember-me-admin">자동 로그인</label>
             </div>
 
             <button type="submit" id="loginBtn">Login</button>
@@ -39,7 +39,7 @@
     </div>
 </div>
 </body>
-<script src="/js/admin_login.js"></script>
+<script th:src="@{/js/admin_login.js}"></script>
 <th:block th:if="${session.loginError != null}">
     <script>alert("[[${session.loginError}]]");</script>
 </th:block>
