@@ -59,6 +59,12 @@
 
                     <!-- 3. 일반 로그인 -->
                     <div id="email-login-form" class="btn-group hidden-group">
+                        <div id="login-error-box"
+                             th:if="${loginError}"
+                             class="login-error-box"
+                             style="display:block; color:#ff4d4f !important; font-weight:700; margin-bottom: 10px; font-size:14px; text-align:center;">
+                            <span th:text="${loginError}"></span>
+                        </div>
                         <form id="login-real-form" action="/login" method="post" class="signup-form-container">
 
                             <input type="text" name="username"
@@ -128,7 +134,7 @@
 
                             <input type="password" id="signup-pw" name="password" placeholder="비밀번호" class="login-input" required>
 
-                            <input type="password" id="signup-pw-confirm" name="passwordConfirm" placeholder="비밀번호 확인" class="login-input" required>
+                            <input type="password" id="signup-pw-confirm" name="passwordCheck" placeholder="비밀번호 확인" class="login-input" required>
                             <div id="pw-check-msg" class="validation-msg"></div>
 
                             <button type="submit" class="login-btn btn-normal-full" style="margin-top:10px;">
@@ -155,10 +161,30 @@
         <script src="/js/main.js"></script>
 
         <!-- 화면 전환/유효성만 남긴 스크립트 -->
-        <script>
+        <script th:inline="javascript">
             document.addEventListener('DOMContentLoaded', function () {
 
-                /* 화면 전환 로직은 그대로 유지 */
+                const params = new URLSearchParams(window.location.search);
+                const isSignupSuccess = params.get('signupSuccess') === 'true';
+
+                if (isSignupSuccess) {
+                    const username = params.get('username') || '회원';
+                    // 토스트 띄우기
+                    showToast(`회원가입 완료!\n${username}님 환영합니다. 로그인 해주세요.`);
+
+                    // URL 파라미터 청소 (새로고침 시 반복 방지)
+                    const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                    window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+
+                    // (선택) 화면을 로그인 폼으로 전환해두기
+                    document.getElementById('login-options-group').style.display = 'none';
+                    const emailLoginForm = document.getElementById('email-login-form');
+                    emailLoginForm.style.display = 'flex';
+                    emailLoginForm.classList.remove('hidden-group');
+                    document.querySelector('.login-page-wrapper').classList.add('signup-mode');
+                }
+
+                /* 화면 요소 가져오기 */
                 const loginPageWrapper = document.querySelector('.login-page-wrapper');
                 const loginOptionsGroup = document.getElementById('login-options-group');
                 const socialLoginGroup = document.getElementById('social-login-group');
@@ -167,6 +193,7 @@
                 const socialSignupGroup = document.getElementById('social-signup-group');
                 const emailSignupFormDiv = document.getElementById('email-signup-form');
 
+                /* 버튼 요소 가져오기 */
                 const showSocialLoginBtn = document.getElementById('show-social-login-btn');
                 const backToLoginBtn = document.getElementById('back-to-login-btn');
                 const emailLoginBtn = document.getElementById('email-login-btn');
@@ -176,6 +203,7 @@
                 const emailSignupBtn = document.getElementById('email-signup-btn');
                 const backToSignupOptionsBtn = document.getElementById('back-to-signup-options-btn');
 
+                /* 회원가입 폼 요소 */
                 const signupForm = document.getElementById('signup-real-form');
                 const checkEmailBtn = document.getElementById('check-email-btn');
                 const emailInput = document.getElementById('signup-email');
@@ -186,19 +214,41 @@
 
                 let isEmailChecked = false;
 
+                /* 에러 발생 시 화면 처리 */
+                const errorBox = document.getElementById('login-error-box');
+                const hasError = errorBox != null;
+
+                if (hasError) {
+                    document.getElementById('login-options-group').style.display = 'none';
+                    document.getElementById('signup-initial-section').style.display = 'none';
+                    document.getElementById('social-login-group').style.display = 'none';
+
+                    const emailLoginFormDiv = document.getElementById('email-login-form');
+                    emailLoginFormDiv.style.display = 'flex';
+                    emailLoginFormDiv.classList.remove('hidden-group');
+
+                    const wrapper = document.querySelector('.login-page-wrapper');
+                    wrapper.classList.add('signup-mode');
+                }
+
+                /* 그룹 전환 함수 (단일 교체용) */
                 function switchGroup(hideElement, showElement) {
                     hideElement.classList.add('fade-out');
                     setTimeout(() => {
                         hideElement.style.display = 'none';
-                        hideElement.classList.remove('fade-out');
+                        hideElement.classList.remove('fade-out'); // 숨긴 후 fade-out 제거
+
                         showElement.style.display = 'flex';
-                        void showElement.offsetWidth;
+                        void showElement.offsetWidth; // 리플로우 강제
                         showElement.classList.remove('hidden-group');
+                        showElement.classList.remove('fade-out'); // 혹시 남아있을지 모를 fade-out 제거
                         showElement.classList.add('fade-in');
+
                         setTimeout(() => showElement.classList.remove('fade-in'), 350);
                     }, 300);
                 }
 
+                /* 1. [초기화면] -> [다른 방법으로 로그인] */
                 showSocialLoginBtn.addEventListener('click', () => {
                     loginOptionsGroup.classList.add('fade-out');
                     signupInitialSection.classList.add('fade-out');
@@ -215,30 +265,91 @@
                     }, 300);
                 });
 
+                /* 2. [다른 방법으로 로그인] -> [취소] (초기화면 복귀) ⭐[수정됨] */
                 backToLoginBtn.addEventListener('click', () => {
-                    switchGroup(socialLoginGroup, loginOptionsGroup);
+                    // 현재 보고 있는 그룹 숨기기
+                    socialLoginGroup.classList.add('fade-out');
+
+                    setTimeout(() => {
+                        socialLoginGroup.style.display = 'none';
+                        socialLoginGroup.classList.remove('fade-out');
+
+                        // 초기 옵션 그룹 복구
+                        loginOptionsGroup.style.display = 'flex';
+                        loginOptionsGroup.classList.remove('fade-out'); // ⭐ 중요: 투명화 해제
+                        loginOptionsGroup.classList.add('fade-in');
+
+                        // 하단 회원가입 섹션 복구
+                        signupInitialSection.style.display = 'flex';
+                        signupInitialSection.classList.remove('fade-out'); // ⭐ 중요: 투명화 및 클릭불가 해제
+                        signupInitialSection.classList.add('fade-in');
+
+                        setTimeout(() => {
+                            loginOptionsGroup.classList.remove('fade-in');
+                            signupInitialSection.classList.remove('fade-in');
+                        }, 350);
+                    }, 300);
                 });
 
+                /* 3. 일반 로그인 버튼 */
                 emailLoginBtn.addEventListener('click', () => {
                     switchGroup(socialLoginGroup, emailLoginFormDiv);
                     loginPageWrapper.classList.add('signup-mode');
                 });
 
+                /* 4. 일반 로그인 -> 취소 */
                 backToLoginOptionsBtn.addEventListener('click', () => {
                     switchGroup(emailLoginFormDiv, socialLoginGroup);
                     loginPageWrapper.classList.remove('signup-mode');
+                    // 여기서 signupInitialSection은 안 보임 (socialLoginGroup 상태로 가므로)
                 });
 
+                /* 5. [초기화면] -> [회원가입] */
                 showSignupOptionsBtn.addEventListener('click', () => {
-                    switchGroup(loginOptionsGroup, socialSignupGroup);
-                    signupInitialSection.style.display = 'none';
-                    loginPageWrapper.classList.add('signup-selection-mode');
+                    // 초기 화면 요소들 숨기기
+                    loginOptionsGroup.classList.add('fade-out');
+                    signupInitialSection.classList.add('fade-out');
+
+                    setTimeout(() => {
+                        loginOptionsGroup.style.display = 'none';
+                        signupInitialSection.style.display = 'none';
+
+                        // 회원가입 선택 그룹 보이기
+                        switchGroup(loginOptionsGroup, socialSignupGroup); // dummy call to reuse logic logic but we handle manually below actually
+                        // switchGroup은 1:1 교환이라 직접 처리
+                        socialSignupGroup.style.display = 'flex';
+                        socialSignupGroup.classList.remove('hidden-group');
+                        socialSignupGroup.classList.add('fade-in');
+
+                        loginPageWrapper.classList.add('signup-selection-mode');
+                        setTimeout(() => socialSignupGroup.classList.remove('fade-in'), 350);
+                    }, 300);
                 });
 
+                /* 6. [회원가입 선택] -> [취소] (초기화면 복귀) ⭐[수정됨] */
                 backToMainBtn.addEventListener('click', () => {
-                    switchGroup(socialSignupGroup, loginOptionsGroup);
-                    signupInitialSection.style.display = 'flex';
-                    loginPageWrapper.classList.remove('signup-selection-mode');
+                    socialSignupGroup.classList.add('fade-out');
+
+                    setTimeout(() => {
+                        socialSignupGroup.style.display = 'none';
+                        socialSignupGroup.classList.remove('fade-out');
+
+                        // 초기 화면 복구
+                        loginOptionsGroup.style.display = 'flex';
+                        loginOptionsGroup.classList.remove('fade-out');
+                        loginOptionsGroup.classList.add('fade-in');
+
+                        signupInitialSection.style.display = 'flex';
+                        signupInitialSection.classList.remove('fade-out'); // ⭐ 중요
+                        signupInitialSection.classList.add('fade-in');
+
+                        loginPageWrapper.classList.remove('signup-selection-mode');
+
+                        setTimeout(() => {
+                            loginOptionsGroup.classList.remove('fade-in');
+                            signupInitialSection.classList.remove('fade-in');
+                        }, 350);
+                    }, 300);
                 });
 
                 emailSignupBtn.addEventListener('click', () => {
@@ -249,8 +360,7 @@
                     switchGroup(emailSignupFormDiv, socialSignupGroup);
                 });
 
-                /* ---------- 회원가입 유효성만 유지 ---------- */
-
+                /* ---------- 회원가입 유효성 검사 로직 (기존 유지) ---------- */
                 function checkPasswordMatch() {
                     const pw = pwInput.value;
                     const confirmPw = pwConfirmInput.value;
@@ -272,7 +382,6 @@
                 pwInput.addEventListener('input', checkPasswordMatch);
                 pwConfirmInput.addEventListener('input', checkPasswordMatch);
 
-                /* 이메일 중복확인 fetch는 유지 (폼 제출과 무관) */
                 checkEmailBtn.addEventListener('click', function () {
                     const email = emailInput.value.trim();
                     if (!email) {
@@ -287,12 +396,12 @@
                         })
                         .then(data => {
                             emailCheckMsg.textContent = "사용 가능한 이메일입니다.";
-                            emailCheckMsg.className = "validation-msg text-success";
+                            emailCheckMsg.className = "validation-msg text-success show";
                             isEmailChecked = true;
                         })
                         .catch(() => {
                             emailCheckMsg.textContent = "이미 존재하는 이메일입니다.";
-                            emailCheckMsg.className = "validation-msg text-danger";
+                            emailCheckMsg.className = "validation-msg text-danger show";
                             isEmailChecked = false;
                         });
                 });
@@ -300,23 +409,22 @@
                 emailInput.addEventListener('input', () => {
                     isEmailChecked = false;
                     emailCheckMsg.textContent = "";
+                    emailCheckMsg.className = "";
                 });
 
                 signupForm.addEventListener('submit', function (e) {
                     if (!isEmailChecked) {
                         e.preventDefault();
                         showToast("이메일 중복 확인을 해주세요.", "error");
+                        return;
                     }
-
                     const pw = pwInput.value;
                     const confirmPw = pwConfirmInput.value;
-
                     if (pw !== confirmPw) {
                         e.preventDefault();
                         showToast("비밀번호가 일치하지 않습니다.", "error");
                     }
                 });
-
             });
         </script>
     </div>

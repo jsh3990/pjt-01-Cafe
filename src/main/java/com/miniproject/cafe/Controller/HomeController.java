@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -66,7 +67,7 @@ public class HomeController {
         return member;
     }
 
-    @GetMapping("/")
+    @GetMapping({"", "/"})
     public String home(Model model, Authentication auth, HttpSession session) {
 
         // 헬퍼 메서드를 통해 회원 정보 가져오기 (세션 없으면 DB에서 가져옴)
@@ -157,7 +158,15 @@ public class HomeController {
     }
 
     @GetMapping("/login")
-    public String login() {
-        return "login";
+    public String login(HttpSession session, Model model) {
+
+        // 로그인 실패 메시지 처리
+        String loginError = (String) session.getAttribute("loginError");
+        if (loginError != null) {
+            model.addAttribute("loginError", loginError);
+            session.removeAttribute("loginError");
+        }
+
+        return "login"; // login.html
     }
 }

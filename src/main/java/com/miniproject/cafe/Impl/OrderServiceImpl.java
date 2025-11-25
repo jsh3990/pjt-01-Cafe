@@ -122,6 +122,8 @@ public class OrderServiceImpl implements OrderService {
 
             if ("주문완료".equals(status)) {
                 emitterStore.sendToUser(updatedOrder.getUId(), "order-complete", updatedOrder);
+            } else if ("주문취소".equals(status)) {
+                emitterStore.sendToUser(updatedOrder.getUId(), "order-cancel", updatedOrder);
             }
         } catch (Exception e) {
             System.out.println("알림 전송 실패: " + e.getMessage());

@@ -21,19 +21,14 @@ public class SseController {
     @GetMapping(value = "/sse/admin/{storeName}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribeAdmin(@PathVariable String storeName) {
 
-        // 1. URL 인코딩된 한글 매장명을 원래대로 복구 (예: %EC%B9%B4 -> 카)
-        String decodedStoreName = URLDecoder.decode(storeName, StandardCharsets.UTF_8);
-
         // 2. 타임아웃 설정 (30분)
-        SseEmitter emitter = new SseEmitter(1000L * 60 * 30);
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 
         // 3. 저장소에 "디코딩된 이름"으로 저장
-        emitterStore.addAdminEmitter(decodedStoreName, emitter);
+        emitterStore.addAdminEmitter(storeName, emitter);
 
         // 4. 연결 즉시 더미 데이터 전송 (503 에러 방지용)
-        try {
-            emitter.send(SseEmitter.event().name("connect").data("admin-connected"));
-        } catch (Exception ignored) {}
+        safeSend(emitter, "connect", "admin-connected");
 
         return emitter;
     }
@@ -42,13 +37,24 @@ public class SseController {
     @GetMapping(value = "/sse/user/{userId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribeUser(@PathVariable String userId) {
 
-        SseEmitter emitter = new SseEmitter(1000L * 60 * 30);
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+
         emitterStore.addUserEmitter(userId, emitter);
 
-        try {
-            emitter.send(SseEmitter.event().name("connect").data("user-connected"));
-        } catch (Exception ignored) {}
+        safeSend(emitter, "connect", "user-connected");
 
         return emitter;
+    }
+
+    private void safeSend(SseEmitter emitter, String event, Object data) {
+        try {
+            emitter.send(SseEmitter.event().name(event).data(data));
+        } catch (Exception e) {
+            try {
+                emitter.complete();
+            } catch (Exception ignored) {
+                ignored.printStackTrace();
+            }
+        }
     }
 }
