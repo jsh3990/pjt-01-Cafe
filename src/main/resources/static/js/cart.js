@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* ---------------------------------------
-       11. 쿠폰 개수 제한 (🔥 수정됨)
+       11. 쿠폰 개수 제한
     --------------------------------------- */
     function limitCouponSelection() {
         const couponCheckboxes = document.querySelectorAll("input[name='couponIds']");
