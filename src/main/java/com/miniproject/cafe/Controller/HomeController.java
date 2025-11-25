@@ -79,11 +79,25 @@ public class HomeController {
         if (isLoggedIn) {
             String memberId = member.getId();
 
-            // 데이터 조회해서 모델에 담기 (이제 null 에러 안 남)
-            model.addAttribute("recentOrders", orderService.getRecentOrders(memberId));
-            model.addAttribute("reward", rewardService.getReward(memberId));
-            model.addAttribute("couponCount", couponService.getCouponsByUser(memberId).size());
+            List<RecentOrderVO> recentOrders = orderService.getRecentOrders(memberId);
+            model.addAttribute("recentOrders", recentOrders);
+
+            RewardVO rewardVO = rewardService.getReward(memberId);
+            int stamps = (rewardVO != null) ? rewardVO.getStamps() : 0;
+
+            Map<String, Object> rewardData = Map.of("stamps", stamps);
+            model.addAttribute("reward", rewardData);
+
+            int couponCount = couponService.getCouponsByUser(memberId).size();
+            model.addAttribute("couponCount", couponCount);
+
             model.addAttribute("member", member);
+
+            session.setAttribute("member", member);
+            session.setAttribute("LOGIN_USER_ID", member.getId());
+            session.setAttribute("reward", rewardVO != null ? rewardVO.getStamps() : 0);
+            session.setAttribute("coupon", couponService.getCouponsByUser(memberId));
+            session.setAttribute("recentOrder", recentOrders);
         }
 
         return "main";

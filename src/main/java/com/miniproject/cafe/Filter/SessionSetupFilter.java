@@ -1,10 +1,8 @@
 package com.miniproject.cafe.Filter;
 
-import com.miniproject.cafe.Mapper.AdminMapper;
-import com.miniproject.cafe.Mapper.MemberMapper;
+import com.miniproject.cafe.Mapper.*;
 import com.miniproject.cafe.Service.CustomUserDetails;
-import com.miniproject.cafe.VO.AdminVO;
-import com.miniproject.cafe.VO.MemberVO;
+import com.miniproject.cafe.VO.*;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,12 +16,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class SessionSetupFilter extends OncePerRequestFilter {
 
     private final MemberMapper memberMapper;
     private final AdminMapper adminMapper;
+    private final RewardMapper rewardMapper;
+    private final CouponMapper couponMapper;
+    private final OrderMapper orderMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -85,6 +87,14 @@ public class SessionSetupFilter extends OncePerRequestFilter {
                         session.setAttribute("member", member);
                         session.setAttribute("LOGIN_USER_ID", member.getId());
                         System.out.println("✅ [Filter] 사용자 세션 복구 완료: " + member.getEmail());
+                        RewardVO rewardVO = rewardMapper.findByMemberId(member.getId());
+                        List<CouponVO> coupons = couponMapper.getCouponsByUser(member.getId());
+                        List<RecentOrderVO> orders = orderMapper.getRecentOrders(member.getId());
+                        if(rewardVO != null) {
+                            session.setAttribute("reward", rewardVO.getStamps());
+                            session.setAttribute("coupon", coupons);
+                            session.setAttribute("recentOrder", orders);
+                        }
                     }
                 }
             }

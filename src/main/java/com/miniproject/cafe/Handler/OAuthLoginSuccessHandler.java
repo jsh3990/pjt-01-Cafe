@@ -1,13 +1,21 @@
 package com.miniproject.cafe.Handler;
 
+import com.miniproject.cafe.Mapper.CouponMapper;
 import com.miniproject.cafe.Mapper.MemberMapper;
+import com.miniproject.cafe.Mapper.OrderMapper;
+import com.miniproject.cafe.Mapper.RewardMapper;
+import com.miniproject.cafe.VO.CouponVO;
 import com.miniproject.cafe.VO.MemberVO;
+import com.miniproject.cafe.VO.RecentOrderVO;
+import com.miniproject.cafe.VO.RewardVO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.RememberMeServices;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 public class OAuthLoginSuccessHandler implements AuthenticationSuccessHandler {

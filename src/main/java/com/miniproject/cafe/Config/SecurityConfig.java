@@ -1,9 +1,10 @@
 package com.miniproject.cafe.Config;
 
+import com.miniproject.cafe.Filter.AdminSessionSetupFilter;
 import com.miniproject.cafe.Filter.SessionSetupFilter;
+import com.miniproject.cafe.Filter.UserSessionSetupFilter;
 import com.miniproject.cafe.Handler.*;
-import com.miniproject.cafe.Mapper.AdminMapper;
-import com.miniproject.cafe.Mapper.MemberMapper;
+import com.miniproject.cafe.Mapper.*;
 import com.miniproject.cafe.Service.AdminUserDetailsService;
 import com.miniproject.cafe.Service.CustomOAuth2UserService;
 import com.miniproject.cafe.Service.CustomUserDetailsService;
@@ -43,6 +44,9 @@ public class SecurityConfig {
 
     private final MemberMapper memberMapper;
     private final AdminMapper adminMapper;
+    private final RewardMapper rewardMapper;
+    private final CouponMapper couponMapper;
+    private final OrderMapper orderMapper;
 
     private final RememberMeSuccessHandler rememberMeSuccessHandler;
 
@@ -147,7 +151,7 @@ public class SecurityConfig {
                         .userDetailsService(adminUserDetailsService)
                         .rememberMeCookieName("remember-me-admin")
                 )
-                .addFilterAfter(new SessionSetupFilter(memberMapper, adminMapper),
+                .addFilterAfter(new AdminSessionSetupFilter(adminMapper),
                         RememberMeAuthenticationFilter.class);
 
         return http.build();
@@ -202,7 +206,7 @@ public class SecurityConfig {
                         .authenticationSuccessHandler(rememberMeSuccessHandler)
                 )
 
-                .addFilterAfter(new SessionSetupFilter(memberMapper, adminMapper),
+                .addFilterAfter(new UserSessionSetupFilter(memberMapper),
                         RememberMeAuthenticationFilter.class);
 
         return http.build();

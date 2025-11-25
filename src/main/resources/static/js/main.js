@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         es.addEventListener("order-cancel", (event) => {
             const order = JSON.parse(event.data);
             const dailyNum = String(order.dailyOrderNum).padStart(4, "0");
-            showToast(`주문번호 ${dailyNum}\n고객님의 주문이 취소되었습니다.`);
+            showToast(`주문번호 ${dailyNum}\n고객님의 주문이 취소되었습니다.`,'error');
             showAlarmDot();
         });
 
