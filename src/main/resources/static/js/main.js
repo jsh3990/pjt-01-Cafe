@@ -17,7 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // URL에서 지저분한 파라미터 제거 (새로고침 시 토스트 반복 방지)
         const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-        window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+        setTimeout(() => {
+            try {
+                window.history.replaceState(null, '', cleanUrl);
+            } catch(e) {
+                console.warn("replaceState failed:", e);
+            }
+        }, 50);
     }
 
     /* ============================================================
@@ -102,15 +108,19 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("🟢 [SSE] 사용자 알림 서비스 연결됨");
             checkMissedNotifications();
         };
+        let sseRetryCount = 0;
+        const SSE_MAX_RETRY = 5;
 
         es.onerror = () => {
             es.close();
-            setTimeout(initUserSSE, 3000);
+            if (sseRetryCount < SSE_MAX_RETRY) {
+                sseRetryCount++;
+                setTimeout(initUserSSE, 2000);
+            }
         };
 
         // 주문 완료 이벤트 수신
         es.addEventListener("order-complete", async (event) => {
-            console.log("🔔 주문 완료 알림 도착:", event.data);
             const order = JSON.parse(event.data);
 
             const menuName = order.orderItemList?.[0]?.menuItemName || "메뉴";
